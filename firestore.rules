@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ضع هنا بريد المعلم وبريد مشرف الشؤون التعليمية فقط.
+    function allowed() {
+      return request.auth != null
+        && request.auth.token.email in [
+          'teacher@example.com',
+          'supervisor@example.com'
+        ];
+    }
+
+    match /records/{recordId} {
+      allow read, write: if allowed();
+    }
+  }
+}
