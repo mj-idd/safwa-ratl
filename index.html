@@ -199,6 +199,33 @@ td.rng{font-size:12px;white-space:nowrap}
 .rp-sign i{display:block;border-bottom:1px dotted var(--ink-2);height:30px;margin-top:6px}
 .rp-foot{margin-top:24px;padding-top:8px;border-top:1px solid var(--line);font-size:11px;color:var(--ink-2);display:flex;justify-content:space-between}
 
+/* listening */
+.lbadge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;border-radius:9px;padding:6px 12px;background:var(--sand);color:var(--ink-2);width:fit-content}
+.lbadge.ok{background:var(--good-soft);color:var(--good)}
+.lbadge.part{background:var(--warn-soft);color:var(--warn)}
+.listen{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;margin-top:14px;background:var(--paper);border:1.5px solid var(--gold-2);border-radius:18px;padding:16px 18px;box-shadow:0 14px 30px -26px rgba(123,74,31,.6)}
+.listen.done{border-color:#bfe0cb;background:linear-gradient(135deg,#fff,#eef8f1)}
+.lc-ic{width:52px;height:52px;border-radius:16px;background:var(--gold-soft);color:var(--brand);display:grid;place-items:center}
+.lc-ic svg{width:28px;height:28px}
+.lc-k{font-size:12px;color:var(--ink-2);font-weight:600}
+.listen h3{margin:2px 0 0;font-size:18px;color:var(--brand)}
+.lc-bar{height:10px;background:var(--sand);border-radius:99px;overflow:hidden;margin-top:10px}
+.lc-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brand-2),var(--gold));border-radius:99px;transition:width .3s}
+.listen.done .lc-bar i{background:var(--good)}
+.lc-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;font-size:12.5px;color:var(--ink-2);margin-top:4px;font-variant-numeric:tabular-nums}
+.lc-play{width:64px;height:64px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--brand-2),var(--brand));color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px -8px rgba(123,74,31,.7)}
+.lc-play svg{width:26px;height:26px}
+.lc-play:disabled{opacity:.45}
+.lc-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;font-size:13px}
+.lc-pick select,.lc-pick input{border:1px solid var(--line);background:var(--paper);border-radius:9px;padding:6px 8px;font-size:14px}
+.lc-pick input{width:72px;text-align:center}
+.lc-link{background:none;border:0;color:var(--brand-2);text-decoration:underline;font-size:12.5px;padding:0}
+.add-st{display:flex;flex-wrap:wrap;gap:8px;align-items:end;background:var(--paper);border:1.5px dashed var(--gold-2);border-radius:14px;padding:14px 16px;margin-top:12px}
+.add-st label{display:grid;gap:3px;font-size:12px;color:var(--ink-2);font-weight:600;flex:1 1 220px;min-width:0}
+.add-st input{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--paper);width:100%}
+.lc-meta span:first-child{white-space:nowrap}
+@media (max-width:560px){.listen{grid-template-columns:1fr auto}.lc-ic{display:none}}
+
 /* accounts */
 .acc-intro{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:18px;font-size:14px}
 .acc-intro code,.acc code{background:var(--sand);padding:1px 7px;border-radius:6px;direction:ltr;display:inline-block}
@@ -350,7 +377,7 @@ td.rng{font-size:12px;white-space:nowrap}
     <div class="cards" id="cards"></div>
     <div class="legend">
       <span>توزيع الدرجة اليومية (100):</span>
-      <span>الحضور 10</span><span>إحضار المصحف مع المرسام 10</span><span>سماع مقطع المنشاوي 10</span>
+      <span>الحضور 10</span><span>إحضار المصحف مع المرسام 10</span><span>سماع مقطع المنشاوي 10 (يسجّله الطالب من حسابه)</span>
       <span>نصاب الحفظ 25</span><span>نصاب المراجعة (25 وجهًا فأكثر) 25</span><span>مستوى الأداء: ممتاز 20، جيد جدًا 15، جيد 10، ضعيف 0</span>
       <span>الغياب يجعل درجة اليوم صفرًا.</span>
     </div>
@@ -378,13 +405,18 @@ td.rng{font-size:12px;white-space:nowrap}
 <div class="toast" id="toast" role="status"></div>
 
 <script>
-const STUDENTS=[
+const DEFAULT_STUDENTS=[
   {id:"s1",name:"عبد الهادي عوض",user:"hadi"},
   {id:"s2",name:"عبد المجيد المالكي",user:"majeed"},
   {id:"s3",name:"أنس المصعبي",user:"anas"},
   {id:"s4",name:"عبد الله الحبكري",user:"abdullah"},
   {id:"s5",name:"نواف الغامدي",user:"nawaf"}
 ];
+let STUDENTS=DEFAULT_STUDENTS.slice();
+const RECITER_URL="https://everyayah.com/data/Minshawy_Murattal_128kbps/";
+const HEAD_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>';
+const PLAY_IC='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+const PAUSE_IC='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
 const DOMAIN="safwa-ratl.local";
 const TARGET=25;
 const SURAHS=[["الفاتحة",7],["البقرة",286],["آل عمران",200],["النساء",176],["المائدة",120],["الأنعام",165],["الأعراف",206],["الأنفال",75],["التوبة",129],["يونس",109],["هود",123],["يوسف",111],["الرعد",43],["إبراهيم",52],["الحجر",99],["النحل",128],["الإسراء",111],["الكهف",110],["مريم",98],["طه",135],["الأنبياء",112],["الحج",78],["المؤمنون",118],["النور",64],["الفرقان",77],["الشعراء",227],["النمل",93],["القصص",88],["العنكبوت",69],["الروم",60],["لقمان",34],["السجدة",30],["الأحزاب",73],["سبأ",54],["فاطر",45],["يس",83],["الصافات",182],["ص",88],["الزمر",75],["غافر",85],["فصلت",54],["الشورى",53],["الزخرف",89],["الدخان",59],["الجاثية",37],["الأحقاف",35],["محمد",38],["الفتح",29],["الحجرات",18],["ق",45],["الذاريات",60],["الطور",49],["النجم",62],["القمر",55],["الرحمن",78],["الواقعة",96],["الحديد",29],["المجادلة",22],["الحشر",24],["الممتحنة",13],["الصف",14],["الجمعة",11],["المنافقون",11],["التغابن",18],["الطلاق",12],["التحريم",12],["الملك",30],["القلم",52],["الحاقة",52],["المعارج",44],["نوح",28],["الجن",28],["المزمل",20],["المدثر",56],["القيامة",40],["الإنسان",31],["المرسلات",50],["النبأ",40],["النازعات",46],["عبس",42],["التكوير",29],["الانفطار",19],["المطففين",36],["الانشقاق",25],["البروج",22],["الطارق",17],["الأعلى",19],["الغاشية",26],["الفجر",30],["البلد",20],["الشمس",15],["الليل",21],["الضحى",11],["الشرح",8],["التين",8],["العلق",19],["القدر",5],["البينة",8],["الزلزلة",8],["العاديات",11],["القارعة",11],["التكاثر",8],["العصر",3],["الهمزة",9],["الفيل",5],["قريش",4],["الماعون",7],["الكوثر",3],["الكافرون",6],["النصر",3],["المسد",5],["الإخلاص",4],["الفلق",5],["الناس",6]];
@@ -421,19 +453,21 @@ function monthKeysOf(k){
 }
 const periodKeys=(kind,k)=>kind==="month"?monthKeysOf(k):weekKeysOf(k);
 
-const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
+const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},listen:{},seeded:false,rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
 let db=null,cfg=window.FIREBASE_CONFIG,unsubs=[];
 
 const rec=(k,sid)=>state.records[k+"_"+sid];
 const studentById=id=>STUDENTS.find(s=>s.id===id);
 
+function heard(k,sid){const L=state.listen[k+"_"+sid];const r=rec(k,sid);return !!(L&&L.done)||!!(r&&r.minshawi===true)}
+function hv(k,sid){if(heard(k,sid))return true;const r=rec(k,sid);return r&&r.att==="p"?false:undefined}
 function score(k,sid){
   const r=rec(k,sid); if(!r) return null;
   if(r.att==="a") return 0;
   let s=0;
   if(r.att==="p") s+=10;
   if(r.mushaf===true) s+=10;
-  if(r.minshawi===true) s+=10;
+  if(heard(k,sid)) s+=10;
   if(r.hifz===true) s+=25;
   if((r.pages||0)>=TARGET) s+=25;
   const lv=LEVELS.find(x=>x[0]===r.level); if(lv) s+=lv[2];
@@ -446,7 +480,7 @@ function stats(sid,keys){
     const r=rec(k,sid); o.n++; o.sum+=sc;
     if(r.att==="a"){o.a++;return}
     o.p++; if(r.hifz===true)o.hifz++; o.pages+=r.pages||0; if((r.pages||0)>=TARGET)o.revOk++;
-    if(r.minshawi===true)o.min++; if(r.mushaf===true)o.mus++;
+    if(heard(k,sid))o.min++; if(r.mushaf===true)o.mus++;
     if(r.hifzFrom&&r.hifzFrom.s&&!o.first) o.first=r.hifzFrom;
     if(r.hifzTo&&r.hifzTo.s) o.last=r.hifzTo; else if(r.hifzFrom&&r.hifzFrom.s) o.last=r.hifzFrom;
   });
@@ -474,7 +508,7 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 function bannerMsg(t){const b=$("banner");b.textContent=t;b.hidden=!t}
 
 /* ---------- tabs & routing ---------- */
-const TABS={staff:[["eval","التقييم اليومي"],["sheet","الكشف الأسبوعي"],["reports","التقارير"],["accounts","حسابات الطلاب"]],
+const TABS={staff:[["eval","التقييم اليومي"],["sheet","الكشف الأسبوعي"],["reports","التقارير"],["accounts","الطلاب والحسابات"]],
             student:[["me","إنجازاتي"],["reports","تقاريري"]]};
 function renderTabs(){
   $("tabs").innerHTML=TABS[state.mode].map(([v,t])=>`<button class="tab" role="tab" data-view="${v}" aria-selected="${state.view===v}">${t}</button>`).join("");
@@ -527,6 +561,13 @@ const SURAH_OPTS='<option value="">— السورة —</option>'+SURAHS.map(([n
 function surahSel(sid,f,v){return `<select data-sid="${sid}" data-rf="${f}" data-part="s" aria-label="السورة">${SURAH_OPTS.replace(`value="${v&&v.s||""}"`,`value="${v&&v.s||""}" selected`)}</select>`}
 function ayahIn(sid,f,v){const m=v&&v.s?SURAHS[v.s-1][1]:286;return `<input type="number" min="1" max="${m}" inputmode="numeric" placeholder="آية" value="${v&&v.a||""}" data-sid="${sid}" data-rf="${f}" data-part="a" aria-label="رقم الآية">`}
 function rangeRow(sid,label,fromF,toF,r){return `<div class="crit range"><span class="lbl">${label}</span><div class="range-row"><div class="end"><span class="lab">من</span>${surahSel(sid,fromF,r[fromF])}${ayahIn(sid,fromF,r[fromF])}</div><div class="end"><span class="lab">إلى</span>${surahSel(sid,toF,r[toF])}${ayahIn(sid,toF,r[toF])}</div></div></div>`}
+function listenBadge(k,sid){
+  const L=state.listen[k+"_"+sid];
+  if(L&&L.done) return `<span class="lbadge ok">✓ أتمّ السماع${L.label?": "+esc(L.label):""}</span>`;
+  if(L) return `<span class="lbadge part">استمع إلى ${L.idx||0} من ${L.total} آية</span>`;
+  if((rec(k,sid)||{}).minshawi===true) return `<span class="lbadge ok">✓ سمع المقطع</span>`;
+  return `<span class="lbadge">لم يستمع بعد</span>`;
+}
 function renderCards(){
   const k=state.sel,d=fromKey(k),best=bestIds(weekKeysOf(k));
   $("dayTitle").textContent=`${wday.format(d)} ${hijri.format(d)}`;
@@ -538,7 +579,7 @@ function renderCards(){
       <div class="card-b">
         <div class="crit att"><span class="lbl">الحضور والغياب</span>${seg(s.id,"att",[["p","حاضر","y"],["a","غائب","n"]],r.att)}</div>
         <div class="crit"><span class="lbl">إحضار المصحف الخاص مع المرسام</span>${seg(s.id,"mushaf",[[true,"✓","y"],[false,"✗","n"]],r.mushaf)}</div>
-        <div class="crit"><span class="lbl">سماع المقطع المحفوظ للشيخ المنشاوي</span>${seg(s.id,"minshawi",[[true,"✓ سمع","y"],[false,"✗ لم يسمع","n"]],r.minshawi)}</div>
+        <div class="crit"><span class="lbl">سماع المقطع للشيخ المنشاوي <span class="hint">(يُسجَّل من حساب الطالب)</span></span>${listenBadge(k,s.id)}</div>
         <div class="crit"><span class="lbl">اكتمال نصاب الحفظ اليومي</span>${seg(s.id,"hifz",[[true,"✓","y"],[false,"✗","n"]],r.hifz)}</div>
         <div class="crit"><label for="pg-${s.id}">المراجعة اليومية (عدد الأوجه)</label>
           <div class="pages"><button data-sid="${s.id}" data-step="-1" aria-label="إنقاص وجه">−</button><input id="pg-${s.id}" type="number" min="0" max="604" inputmode="numeric" value="${p}" data-sid="${s.id}" data-pages="1"><button data-sid="${s.id}" data-step="1" aria-label="زيادة وجه">+</button>
@@ -561,7 +602,7 @@ function renderSheet(){
     ks.forEach((k,i)=>{
       const r=rec(k,s.id)||{},sc=score(k,s.id),lv=LEVELS.find(x=>x[0]===r.level);
       h+=`<tr class="${i===0?"grp":""}">${i===0?`<td class="sname" rowspan="7">${esc(s.name)}${best.has(s.id)?`<span class="inline-crown">${CROWN}</span>`:""}<div class="hint">المتوسط: ${st.avg??"–"}</div></td>`:""}
-        <td class="dname">${wday.format(fromKey(k))}</td>${yn(r.mushaf)}${yn(r.minshawi)}${yn(r.hifz)}<td class="rng">${esc(fmtRange(r.hifzFrom,r.hifzTo))}</td>
+        <td class="dname">${wday.format(fromKey(k))}</td>${yn(r.mushaf)}${yn(hv(k,s.id))}${yn(r.hifz)}<td class="rng">${esc(fmtRange(r.hifzFrom,r.hifzTo))}</td>
         <td class="${r.pages==null?"":r.pages>=TARGET?"ok":"no"}">${r.pages??""}</td><td class="rng">${esc(fmtRange(r.revFrom,r.revTo))}</td>
         <td>${lv?lv[1]:""}</td><td class="${r.att==="p"?"ok":r.att==="a"?"no":""}">${r.att==="p"?"حاضر":r.att==="a"?"غائب":""}</td>
         <td>${sc??""}</td><td class="note">${esc(r.notes||"")}</td></tr>`;
@@ -627,7 +668,7 @@ function studentReport(kind,keys,sid){
     const r=rec(k,sid); if(!r) return;
     const d=fromKey(k),lv=LEVELS.find(y=>y[0]===r.level),sc=score(k,sid);
     if(r.att==="a"){html+=`<tr><td class="l">${wday.format(d)}</td><td>${hijriD.format(d)}</td><td><span class="no">غائب</span></td><td colspan="5"></td><td>0</td><td class="n">${esc(r.notes||"")}</td></tr>`;return}
-    html+=`<tr><td class="l">${wday.format(d)}</td><td>${hijriD.format(d)}</td><td><span class="yes">حاضر</span></td><td>${yn(r.hifz)} <span class="n">${esc(fmtRange(r.hifzFrom,r.hifzTo))}</span></td><td>${r.pages??"—"} <span class="n">${esc(fmtRange(r.revFrom,r.revTo))}</span></td><td>${yn(r.minshawi)}</td><td>${yn(r.mushaf)}</td><td>${lv?lv[1]:""}</td><td><b>${sc}</b></td><td class="n">${esc(r.notes||"")}</td></tr>`;
+    html+=`<tr><td class="l">${wday.format(d)}</td><td>${hijriD.format(d)}</td><td><span class="yes">حاضر</span></td><td>${yn(r.hifz)} <span class="n">${esc(fmtRange(r.hifzFrom,r.hifzTo))}</span></td><td>${r.pages??"—"} <span class="n">${esc(fmtRange(r.revFrom,r.revTo))}</span></td><td>${yn(hv(k,sid))}</td><td>${yn(r.mushaf)}</td><td>${lv?lv[1]:""}</td><td><b>${sc}</b></td><td class="n">${esc(r.notes||"")}</td></tr>`;
   });
   return html+"</tbody></table>"+rpSign()+rpFoot()+"</div>";
 }
@@ -676,6 +717,7 @@ function renderMe(){
   Object.keys(state.records).sort().forEach(id=>{const r=state.records[id];if(r.sid===sid&&r.att!=="a"){if(r.hifzTo&&r.hifzTo.s)lastPoint=r.hifzTo;else if(r.hifzFrom&&r.hifzFrom.s)lastPoint=r.hifzFrom}});
   const first=s.name.split(" ").slice(0,s.name.startsWith("عبد ")?2:1).join(" ");
   let html=`<section class="hero">${ring(w.avg)}<div><h2>أهلًا يا ${esc(first)}</h2><p>${w.n?`تقديرك هذا الأسبوع: <b>${g[1]}</b>، في ${w.n} ${w.n===1?"يوم مُقيَّم":"أيام مُقيَّمة"}.`:"لم يُسجَّل لك تقييم هذا الأسبوع بعد."}</p>${lastPoint?`<span class="reach">${CROWN.replace('viewBox','width="16" height="16" viewBox')}وصلت في الحفظ إلى: ${esc(fmtPoint(lastPoint))}</span>`:""}</div></section>`;
+  html+=listenCard();
   const t=(v,lbl,frac)=>`<div class="tile"><b>${v}</b><span>${lbl}</span>${frac!==undefined?`<div class="meter${frac>=1?" full":""}"><i style="width:${Math.min(100,(frac||0)*100)}%"></i></div>`:""}</div>`;
   html+=`<h2 class="sec-title">إنجازاتي في شهر ${hMonth.format(fromKey(mk[0]))}</h2><div class="tiles">
     ${t(`${m.p}<small class="muted" style="display:inline"> / ${m.p+m.a}</small>`,"أيام الحضور",m.p+m.a?m.p/(m.p+m.a):0)}
@@ -698,6 +740,95 @@ function renderMe(){
     <div class="dayd">${dayDetail(state.calSel)}</div></div>`;
   $("v-me").innerHTML=html;
 }
+/* ---------- Minshawi listening (student) ---------- */
+const AUD=new Audio(); AUD.preload="auto";
+let P=null,lastT=0,saveChain=Promise.resolve();
+const pad3=n=>String(n).padStart(3,"0");
+function ayahList(from,to){
+  if(!from||!from.s) return [];
+  if(!to||!to.s||to.s<from.s) to={s:from.s,a:to&&to.s===from.s?to.a:null};
+  const out=[];
+  for(let s=from.s;s<=to.s;s++){const n=SURAHS[s-1][1],a0=s===from.s?(from.a||1):1,a1=s===to.s?(to.a||n):n;for(let a=a0;a<=Math.min(a1,n);a++)out.push([s,a])}
+  return out;
+}
+function passageFor(sid){
+  const k=today(),L=state.listen[k+"_"+sid];
+  if(L&&L.from) return {from:L.from,to:L.to,src:"مقطع اليوم",locked:true};
+  const r=rec(k,sid);
+  if(r&&r.hifzFrom&&r.hifzFrom.s) return {from:r.hifzFrom,to:r.hifzTo&&r.hifzTo.s?r.hifzTo:r.hifzFrom,src:"ورد الحفظ الذي سجّله المعلم اليوم",locked:true};
+  if(P&&P.custom) return {...P.custom,src:"المقطع الذي اخترته",locked:false};
+  let last=null; Object.keys(state.records).sort().forEach(id=>{const x=state.records[id];if(x.sid===sid&&x.hifzFrom&&x.hifzFrom.s)last=x});
+  if(last) return {from:last.hifzFrom,to:last.hifzTo&&last.hifzTo.s?last.hifzTo:last.hifzFrom,src:"آخر ورد حفظ سجّله المعلم",locked:false};
+  return null;
+}
+function ensurePlayer(){
+  const k=today()+"_"+state.sid,ps=passageFor(state.sid);
+  if(!ps){if(P&&P.key!==k)P=null;return null}
+  const list=ayahList(ps.from,ps.to),L=state.listen[k];
+  if(!P||P.key!==k||P.sig!==JSON.stringify([ps.from,ps.to])){
+    if(P&&P.playing) return P;
+    P={key:k,sig:JSON.stringify([ps.from,ps.to]),from:ps.from,to:ps.to,src:ps.src,locked:ps.locked,list,idx:L&&!L.done?Math.min(L.idx||0,list.length):0,playing:false,replay:!!(L&&L.done),custom:P&&P.custom,picking:false};
+  }
+  P.src=ps.src;P.locked=ps.locked;
+  return P;
+}
+function passageLabel(p){return fmtRange(p.from,p.to)}
+function listenCard(){
+  const p=ensurePlayer(),L=state.listen[today()+"_"+state.sid];
+  const pickHtml=`<div class="lc-pick"><span>السورة</span><select id="lcS">${SURAH_OPTS}</select><span>من آية</span><input id="lcA" type="number" min="1" inputmode="numeric" placeholder="1"><span>إلى آية</span><input id="lcB" type="number" min="1" inputmode="numeric" placeholder="آخرها"><button class="btn" id="lcSet" type="button">اعتماد المقطع</button></div>`;
+  if(!p) return `<section class="listen"><div class="lc-ic">${HEAD_IC}</div><div><div class="lc-k">ورد السماع اليومي | الشيخ محمد صدّيق المنشاوي (مرتّل)</div><h3>اختر المقطع الذي تحفظه اليوم</h3><div class="hint">لم يسجّل المعلم مقدار حفظك بعد؛ اختر السورة والآيات، ثم استمع إلى المقطع كاملًا.</div>${pickHtml}</div><span></span></section>`;
+  const total=p.list.length,done=!!(L&&L.done)&&!p.playing,idx=p.replay&&!p.playing?total:p.idx;
+  const cur=p.list[Math.min(p.idx,total-1)];
+  return `<section class="listen${done?" done":""}" id="lcCard"><div class="lc-ic">${HEAD_IC}</div><div>
+    <div class="lc-k">ورد السماع اليومي | الشيخ محمد صدّيق المنشاوي (مرتّل)</div>
+    <h3>${esc(passageLabel(p))} <small class="muted" style="display:inline">(${total} آية)</small></h3>
+    <div class="hint">${done?"✓ أتممت سماع مقطع اليوم كاملًا، وأُضيف إلى إنجازك.":esc(p.src)}${!p.locked&&!p.playing&&!(L&&L.idx)?` <button class="lc-link" id="lcChange" type="button">تغيير المقطع</button>`:""}</div>
+    ${p.picking?pickHtml:""}
+    <div class="lc-bar"><i id="lcBar" style="width:${total?idx/total*100:0}%"></i></div>
+    <div class="lc-meta"><span id="lcCount">${idx} من ${total} آية</span><span id="lcNow">${p.playing&&cur?esc(surahName(cur[0]))+" — الآية "+cur[1]:done?"":"يُحتسب السماع عند اكتمال المقطع، ولا يمكن تقديمه أو تسريعه."}</span></div>
+  </div><button class="lc-play" id="lcBtn" type="button" aria-label="${p.playing?"إيقاف مؤقت":"تشغيل"}">${p.playing?PAUSE_IC:PLAY_IC}</button></section>`;
+}
+function updateListenUI(){
+  if(!P) return; const total=P.list.length,cur=P.list[Math.min(P.idx,total-1)];
+  const bar=$("lcBar"),cnt=$("lcCount"),now=$("lcNow"),btn=$("lcBtn");
+  if(bar) bar.style.width=(total?P.idx/total*100:0)+"%";
+  if(cnt) cnt.textContent=`${P.idx} من ${total} آية`;
+  if(now&&cur) now.textContent=P.playing?`${surahName(cur[0])} — الآية ${cur[1]}`:"متوقف مؤقتًا";
+  if(btn){btn.innerHTML=P.playing?PAUSE_IC:PLAY_IC;btn.setAttribute("aria-label",P.playing?"إيقاف مؤقت":"تشغيل")}
+}
+function saveListen(){
+  if(!P||P.replay||!db) return;
+  const [d]=P.key.split("_"),total=P.list.length,idx=P.idx,done=idx>=total;
+  const body={date:d,sid:state.sid,from:P.from,to:P.to||P.from,label:passageLabel(P),total,idx,done,updatedAt:new Date().toISOString()};
+  if(done) body.completedAt=body.updatedAt;
+  saveChain=saveChain.then(()=>db.collection("listen").doc(P.key).set(body)).catch(()=>toast("تعذّر حفظ تقدّم السماع؛ تحقق من الاتصال."));
+}
+function loadAyah(){const [s,a]=P.list[P.idx];lastT=0;AUD.src=RECITER_URL+pad3(s)+pad3(a)+".mp3";AUD.playbackRate=1}
+function togglePlay(){
+  const p=ensurePlayer(); if(!p||!p.list.length) return;
+  if(p.playing){AUD.pause();p.playing=false;updateListenUI();return}
+  if(p.idx>=p.list.length){p.idx=0;p.replay=true}
+  if(!AUD.src||AUD.ended||AUD.dataset.k!==p.key+p.idx){loadAyah();AUD.dataset.k=p.key+p.idx}
+  p.playing=true;
+  AUD.play().then(()=>updateListenUI()).catch(()=>{p.playing=false;updateListenUI();toast("تعذّر تشغيل التلاوة؛ تحقق من الاتصال بالإنترنت.")});
+  if(!p.replay&&p.idx===0) saveListen();
+  renderMe();
+}
+AUD.addEventListener("timeupdate",()=>{if(AUD.currentTime-lastT>1.5){AUD.currentTime=lastT}else lastT=AUD.currentTime});
+AUD.addEventListener("seeking",()=>{if(AUD.currentTime-lastT>1.5)AUD.currentTime=lastT});
+AUD.addEventListener("ratechange",()=>{if(AUD.playbackRate!==1)AUD.playbackRate=1});
+AUD.addEventListener("ended",()=>{
+  if(!P) return;
+  P.idx++;
+  if(P.idx>=P.list.length){
+    P.playing=false;
+    if(!P.replay){saveListen();toast("بارك الله فيك؛ أتممت سماع مقطع اليوم كاملًا.")}
+    P.replay=true; renderMe(); return;
+  }
+  saveListen(); loadAyah(); AUD.dataset.k=P.key+P.idx;
+  AUD.play().catch(()=>{P.playing=false}); updateListenUI();
+});
+AUD.addEventListener("pause",()=>{if(P&&P.playing&&!AUD.ended){P.playing=false;updateListenUI()}});
 function dayDetail(k){
   const r=rec(k,state.sid),d=fromKey(k);
   const head=`<h3>${wday.format(d)} ${hijri.format(d)}</h3>`;
@@ -710,12 +841,20 @@ function dayDetail(k){
     ${fmtRange(r.hifzFrom,r.hifzTo)?`<li><span>مقدار الحفظ</span><b>${esc(fmtRange(r.hifzFrom,r.hifzTo))}</b></li>`:""}
     <li><span>المراجعة</span><b class="${(r.pages||0)>=TARGET?"yes":"no"}">${r.pages||0} / 25 وجهًا</b></li>
     ${fmtRange(r.revFrom,r.revTo)?`<li><span>مقدار المراجعة</span><b>${esc(fmtRange(r.revFrom,r.revTo))}</b></li>`:""}
-    <li><span>سماع مقطع المنشاوي</span>${yn(r.minshawi)}</li>
+    <li><span>سماع مقطع المنشاوي</span>${yn(hv(k,state.sid))}</li>
     <li><span>إحضار المصحف مع المرسام</span>${yn(r.mushaf)}</li>
     <li><span>مستوى الأداء مع التجويد</span><b>${lv?lv[1]:"—"}</b></li></ul>
     ${r.notes?`<div class="tnote">ملاحظة المعلم: ${esc(r.notes)}</div>`:""}`;
 }
 $("v-me").addEventListener("click",e=>{
+  if(e.target.closest("#lcBtn")){togglePlay();return}
+  if(e.target.closest("#lcChange")){const p=ensurePlayer();if(p){p.picking=true;renderMe()}return}
+  if(e.target.closest("#lcSet")){
+    const s=parseInt($("lcS").value); if(!s){toast("اختر السورة أولًا.");return}
+    const n=SURAHS[s-1][1]; let a=parseInt($("lcA").value)||1, b=parseInt($("lcB").value)||n;
+    a=Math.min(Math.max(1,a),n); b=Math.min(Math.max(a,b),n);
+    P={...(P||{}),custom:{from:{s,a},to:{s,a:b}},key:null}; ensurePlayer(); renderMe(); return;
+  }
   const c=e.target.closest("[data-cal]"); if(c){state.calSel=c.dataset.cal;renderMe();return}
   const n=e.target.closest("[data-cnav]");
   if(n){const ck=monthKeysOf(state.cal),dir=+n.dataset.cnav;state.cal=key(addDays(fromKey(dir<0?ck[0]:ck[ck.length-1]),dir));renderMe()}
@@ -725,16 +864,24 @@ $("v-me").addEventListener("click",e=>{
 function renderAccounts(){
   const byS={};
   Object.entries(state.users).forEach(([uid,u])=>{(byS[u.sid]=byS[u.sid]||[]).push({uid,...u})});
-  $("v-accounts").innerHTML=`<div class="acc-intro">ينشئ المعلم أو المشرف لكل طالب حسابًا من هنا، ثم يسلّمه اسم المستخدم وكلمة المرور. يدخل الطالب من رابط المنصة نفسه، فلا يرى إلا تقييماته وتقاريره. وإن نسي الطالب كلمة المرور فأوقف حسابه وأنشئ له حسابًا بديلًا باسم مستخدم جديد.</div>
+  $("v-accounts").innerHTML=`<form class="add-st" id="addSt"><label>إضافة طالب جديد إلى الحلقة<input name="name" placeholder="الاسم الثلاثي للطالب" autocomplete="off" required></label><button class="btn" type="submit">إضافة الطالب</button></form><div class="acc-intro">ينشئ المعلم أو المشرف لكل طالب حسابًا من هنا، ثم يسلّمه اسم المستخدم وكلمة المرور. يدخل الطالب من رابط المنصة نفسه، فلا يرى إلا تقييماته وتقاريره. وإن نسي الطالب كلمة المرور فأوقف حسابه وأنشئ له حسابًا بديلًا باسم مستخدم جديد.</div>
   <div class="acc-grid">${STUDENTS.map(s=>{
     const list=byS[s.id]||[];
-    return `<article class="acc"><div class="acc-h"><b>${esc(s.name)}</b>${list.length?'<span class="pill ok">الحساب مفعّل</span>':'<span class="pill">لم يُنشأ بعد</span>'}</div>
+    return `<article class="acc"><div class="acc-h"><b>${esc(s.name)}</b>${list.length?'<span class="pill ok">الحساب مفعّل</span>':'<span class="pill">لم يُنشأ بعد</span>'}</div><div class="acc-row"><span class="hint">رقم الطالب في المنصة: ${esc(s.id)}</span><button class="linkbtn" type="button" data-rm="${s.id}">إخراج من الحلقة</button></div>
     ${list.map(u=>`<div class="acc-row"><span>اسم المستخدم: <code>${esc(u.user)}</code></span><button class="linkbtn" data-off="${u.uid}">إيقاف الحساب</button></div>`).join("")}
-    <form class="acc-form" data-sid="${s.id}"><label>اسم المستخدم (بالإنجليزية)<input name="user" value="${list.length?"":s.user}" dir="ltr" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><label>كلمة المرور (6 أحرف فأكثر)<input name="pw" type="password" autocomplete="new-password" minlength="6" required dir="ltr"></label><button class="btn" type="submit">${list.length?"إنشاء حساب بديل":"إنشاء الحساب"}</button><div class="acc-msg" role="status"></div></form></article>`;
+    <form class="acc-form" data-sid="${s.id}"><label>اسم المستخدم (بالإنجليزية)<input name="user" value="${list.length?"":esc(s.user||"")}" dir="ltr" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><label>كلمة المرور (6 أحرف فأكثر)<input name="pw" type="password" autocomplete="new-password" minlength="6" required dir="ltr"></label><button class="btn" type="submit">${list.length?"إنشاء حساب بديل":"إنشاء الحساب"}</button><div class="acc-msg" role="status"></div></form></article>`;
   }).join("")}</div>`;
 }
 $("v-accounts").addEventListener("submit",async e=>{
   e.preventDefault();
+  if(e.target.id==="addSt"){
+    const name=e.target.name.value.trim().replace(/\s+/g," ");
+    if(name.length<3){toast("اكتب اسم الطالب كاملًا.");return}
+    const id="s"+Date.now().toString(36),order=Math.max(0,...STUDENTS.map(x=>x.order||0))+1;
+    try{await db.collection("students").doc(id).set({name,user:"",order,active:true,createdAt:new Date().toISOString()});toast(`أُضيف الطالب ${name} إلى الحلقة.`);e.target.reset()}
+    catch(_){toast("تعذّرت إضافة الطالب؛ أعد المحاولة.")}
+    return;
+  }
   const f=e.target,msg=f.querySelector(".acc-msg"),btn=f.querySelector("button");
   const user=f.user.value.trim().toLowerCase(),pw=f.pw.value,sid=f.dataset.sid;
   msg.className="acc-msg";
@@ -754,6 +901,13 @@ $("v-accounts").addEventListener("submit",async e=>{
   }
 });
 $("v-accounts").addEventListener("click",async e=>{
+  const rm=e.target.closest("[data-rm]");
+  if(rm){
+    if(!rm.dataset.sure){rm.dataset.sure="1";rm.textContent="اضغط مرة أخرى للتأكيد";setTimeout(()=>{if(rm.isConnected){delete rm.dataset.sure;rm.textContent="إخراج من الحلقة"}},4000);return}
+    try{await db.collection("students").doc(rm.dataset.rm).set({active:false,removedAt:new Date().toISOString()},{merge:true});toast("أُخرج الطالب من الحلقة، وبقيت سجلاته محفوظة.")}
+    catch(_){toast("تعذّر إخراج الطالب؛ أعد المحاولة.")}
+    return;
+  }
   const b=e.target.closest("[data-off]"); if(!b) return;
   if(!b.dataset.sure){b.dataset.sure="1";b.textContent="اضغط مرة أخرى للتأكيد";setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent="إيقاف الحساب"}},4000);return}
   try{await db.collection("users").doc(b.dataset.off).delete();toast("أُوقف الحساب، ولم يعد صاحبه يستطيع الاطلاع على التقييمات.")}
@@ -845,22 +999,44 @@ function onRecords(docs){
   if(state.view==="accounts") return;
   render();
 }
+function onListen(docs){
+  const o={}; docs.forEach(d=>{o[d.id]=d.data()}); state.listen=o;
+  if(state.view==="eval"){const a=document.activeElement;if(a&&a.tagName==="TEXTAREA"){renderBoard();return}}
+  if(state.view==="accounts") return;
+  if(state.view==="me"&&P&&P.playing){updateListenUI();return}
+  render();
+}
+async function onStudents(docs){
+  if(!docs.length){
+    if(state.seeded) return; state.seeded=true;
+    for(const [i,s] of DEFAULT_STUDENTS.entries()){try{await db.collection("students").doc(s.id).set({name:s.name,user:s.user,order:i+1,active:true})}catch(_){}}
+    return;
+  }
+  STUDENTS=docs.map(d=>({id:d.id,...d.data()})).filter(s=>s.active!==false).sort((a,b)=>(a.order||0)-(b.order||0));
+  render();
+}
 async function onLogin(u){
   db=firebase.firestore();
   let me=null;
   try{const d=await db.collection("users").doc(u.uid).get(); if(d.exists) me=d.data()}catch(_){}
-  if(me&&me.sid&&studentById(me.sid)){
-    const s=studentById(me.sid);
-    enter("student",me.sid,`الطالب: <b>${esc(s.name)}</b>`);
+  if(me&&me.sid){
+    let nm=(studentById(me.sid)||{}).name||"";
+    try{const sd=await db.collection("students").doc(me.sid).get(); if(sd.exists&&sd.data().name) nm=sd.data().name}catch(_){}
+    STUDENTS=[{id:me.sid,name:nm||"الطالب"}];
+    enter("student",me.sid,`الطالب: <b>${esc(nm||"")}</b>`);
     listen(db.collection("records").where("sid","==",me.sid),onRecords);
+    listen(db.collection("listen").where("sid","==",me.sid),onListen);
   }else{
     enter("staff",null,`مسجّل الدخول: <b dir="ltr">${esc(u.email||"")}</b>`);
     listen(db.collection("records"),onRecords);
+    listen(db.collection("listen"),onListen);
+    listen(db.collection("students"),onStudents);
     listen(db.collection("users"),docs=>{const o={};docs.forEach(d=>{o[d.id]=d.data()});state.users=o;if(state.view==="accounts")renderAccounts()});
   }
 }
 function onLogout(){
-  stopSubs(); db=null; state.mode=null; state.records={}; state.users={};
+  stopSubs(); db=null; state.mode=null; state.records={}; state.users={}; state.listen={};
+  try{AUD.pause()}catch(_){} P=null; STUDENTS=DEFAULT_STUDENTS.slice();
   $("app").hidden=true; $("userbar").hidden=true; $("loginWrap").hidden=false;
 }
 if(!window.firebase||!cfg||!cfg.apiKey||cfg.apiKey.indexOf("YOUR_")===0){
