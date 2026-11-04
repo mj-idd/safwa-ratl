@@ -127,7 +127,7 @@ textarea{width:100%;min-height:62px;border:1px solid var(--line);background:var(
 
 /* weekly sheet */
 .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--paper);margin-top:18px}
-.sheet{border-collapse:collapse;width:100%;min-width:1100px;font-size:13px}
+.sheet{border-collapse:collapse;width:100%;min-width:1220px;font-size:13px}
 .sheet th{background:var(--sand);color:var(--brand);font-weight:700;padding:9px 6px;border-left:1px solid var(--line);border-bottom:2px solid var(--gold-2);line-height:1.35}
 .sheet th small{display:block;font-weight:400;color:var(--ink-2);font-size:11px}
 .sheet td{border-top:1px solid var(--line);border-left:1px solid var(--line);padding:5px 6px;text-align:center;font-variant-numeric:tabular-nums}
@@ -224,6 +224,10 @@ td.rng{font-size:12px;white-space:nowrap}
 .add-st label{display:grid;gap:3px;font-size:12px;color:var(--ink-2);font-weight:600;flex:1 1 220px;min-width:0}
 .add-st input{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--paper);width:100%}
 .lc-meta span:first-child{white-space:nowrap}
+.seg button:disabled{opacity:.35;cursor:not-allowed}
+.lockhint{color:var(--bad);font-size:12px;font-weight:600}
+.lc-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.next-row{background:var(--gold-soft);border-radius:12px;padding:10px 12px}
 @media (max-width:560px){.listen{grid-template-columns:1fr auto}.lc-ic{display:none}}
 
 /* accounts */
@@ -453,13 +457,18 @@ function monthKeysOf(k){
 }
 const periodKeys=(kind,k)=>kind==="month"?monthKeysOf(k):weekKeysOf(k);
 
-const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},listen:{},seeded:false,rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
+const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},listen:{},assign:{},seeded:false,rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
 let db=null,cfg=window.FIREBASE_CONFIG,unsubs=[];
 
 const rec=(k,sid)=>state.records[k+"_"+sid];
 const studentById=id=>STUDENTS.find(s=>s.id===id);
 
-function heard(k,sid){const L=state.listen[k+"_"+sid];const r=rec(k,sid);return !!(L&&L.done)||!!(r&&r.minshawi===true)}
+function buildAssign(){const m={};Object.values(state.records).forEach(x=>{if(x&&x.nextFrom&&x.nextFrom.s&&x.sid&&x.date)(m[x.sid]=m[x.sid]||[]).push(x.date)});Object.values(m).forEach(a=>a.sort());state.assign=m}
+function assignAt(d,sid){const r=rec(d,sid);return r&&r.nextFrom&&r.nextFrom.s?{date:d,from:r.nextFrom,to:r.nextTo&&r.nextTo.s?r.nextTo:r.nextFrom}:null}
+function assignBefore(k,sid){const a=state.assign[sid]||[];for(let i=a.length-1;i>=0;i--)if(a[i]<k)return assignAt(a[i],sid);return null}
+function latestAssign(sid){const a=state.assign[sid]||[],t=today();for(let i=a.length-1;i>=0;i--)if(a[i]<=t)return assignAt(a[i],sid);return null}
+function listenFor(k,sid){const a=assignBefore(k,sid);return a?{a,L:state.listen[a.date+"_"+sid]}:{a:null,L:state.listen[k+"_"+sid]}}
+function heard(k,sid){const {a,L}=listenFor(k,sid);if(L&&L.done)return true;if(a)return false;const r=rec(k,sid);return !!(r&&r.minshawi===true)}
 function hv(k,sid){if(heard(k,sid))return true;const r=rec(k,sid);return r&&r.att==="p"?false:undefined}
 function score(k,sid){
   const r=rec(k,sid); if(!r) return null;
@@ -524,6 +533,7 @@ $("tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(b)set
 
 function render(){
   if(!state.mode) return;
+  buildAssign();
   if(state.view==="eval"||state.view==="sheet") renderWeek();
   if(state.view==="eval"){renderBoard();renderCards()}
   if(state.view==="sheet") renderSheet();
@@ -562,7 +572,13 @@ function surahSel(sid,f,v){return `<select data-sid="${sid}" data-rf="${f}" data
 function ayahIn(sid,f,v){const m=v&&v.s?SURAHS[v.s-1][1]:286;return `<input type="number" min="1" max="${m}" inputmode="numeric" placeholder="آية" value="${v&&v.a||""}" data-sid="${sid}" data-rf="${f}" data-part="a" aria-label="رقم الآية">`}
 function rangeRow(sid,label,fromF,toF,r){return `<div class="crit range"><span class="lbl">${label}</span><div class="range-row"><div class="end"><span class="lab">من</span>${surahSel(sid,fromF,r[fromF])}${ayahIn(sid,fromF,r[fromF])}</div><div class="end"><span class="lab">إلى</span>${surahSel(sid,toF,r[toF])}${ayahIn(sid,toF,r[toF])}</div></div></div>`}
 function listenBadge(k,sid){
-  const L=state.listen[k+"_"+sid];
+  const {a,L}=listenFor(k,sid);
+  if(a){
+    const lbl=esc(fmtRange(a.from,a.to));
+    if(L&&L.done) return `<span class="lbadge ok">✓ أتمّ سماع المقطع المقرر: ${lbl}</span>`;
+    if(L) return `<span class="lbadge part">المقطع المقرر ${lbl}: استمع إلى ${L.idx||0} من ${L.total} آية</span>`;
+    return `<span class="lbadge part">لم يستمع للمقطع المقرر: ${lbl}</span>`;
+  }
   if(L&&L.done) return `<span class="lbadge ok">✓ أتمّ السماع${L.label?": "+esc(L.label):""}</span>`;
   if(L) return `<span class="lbadge part">استمع إلى ${L.idx||0} من ${L.total} آية</span>`;
   if((rec(k,sid)||{}).minshawi===true) return `<span class="lbadge ok">✓ سمع المقطع</span>`;
@@ -572,7 +588,7 @@ function renderCards(){
   const k=state.sel,d=fromKey(k),best=bestIds(weekKeysOf(k));
   $("dayTitle").textContent=`${wday.format(d)} ${hijri.format(d)}`;
   $("cards").innerHTML=STUDENTS.map(s=>{
-    const r=rec(k,s.id)||{},sc=score(k,s.id),p=r.pages||0;
+    const r=rec(k,s.id)||{},sc=score(k,s.id),p=r.pages||0,lf=listenFor(k,s.id),lock=!!(lf.a&&!(lf.L&&lf.L.done));
     return `<article class="card${r.att==="a"?" absent":""}${best.has(s.id)?" best":""}">
       <div class="card-h"><div class="nm">${esc(s.name)}${best.has(s.id)?`<span class="inline-crown" title="أفضل طالب هذا الأسبوع">${CROWN}</span>`:""}</div>
         <span class="score ${cls(sc)}">${sc===null?"لم يُقيَّم":sc+" / 100"}</span></div>
@@ -580,7 +596,7 @@ function renderCards(){
         <div class="crit att"><span class="lbl">الحضور والغياب</span>${seg(s.id,"att",[["p","حاضر","y"],["a","غائب","n"]],r.att)}</div>
         <div class="crit"><span class="lbl">إحضار المصحف الخاص مع المرسام</span>${seg(s.id,"mushaf",[[true,"✓","y"],[false,"✗","n"]],r.mushaf)}</div>
         <div class="crit"><span class="lbl">سماع المقطع للشيخ المنشاوي <span class="hint">(يُسجَّل من حساب الطالب)</span></span>${listenBadge(k,s.id)}</div>
-        <div class="crit"><span class="lbl">اكتمال نصاب الحفظ اليومي</span>${seg(s.id,"hifz",[[true,"✓","y"],[false,"✗","n"]],r.hifz)}</div>
+        <div class="crit"><span class="lbl">اكتمال نصاب الحفظ اليومي</span>${lock&&r.hifz!==true?seg(s.id,"hifz",[[true,"✓","y"],[false,"✗","n"]],r.hifz).replace('class="y"','class="y" disabled title="لم يُكمل الطالب سماع المقطع المقرر"')+`<span class="lockhint">لا يُسمَّع له حتى يُكمل سماع المقطع المقرر للشيخ المنشاوي.</span>`:seg(s.id,"hifz",[[true,"✓","y"],[false,"✗","n"]],r.hifz)}</div>
         <div class="crit"><label for="pg-${s.id}">المراجعة اليومية (عدد الأوجه)</label>
           <div class="pages"><button data-sid="${s.id}" data-step="-1" aria-label="إنقاص وجه">−</button><input id="pg-${s.id}" type="number" min="0" max="604" inputmode="numeric" value="${p}" data-sid="${s.id}" data-pages="1"><button data-sid="${s.id}" data-step="1" aria-label="زيادة وجه">+</button>
           <button data-sid="${s.id}" data-set="${TARGET}" style="width:auto;padding:0 10px;font-size:13px">25</button></div>
@@ -589,6 +605,7 @@ function renderCards(){
         <div class="crit"><span class="lbl">مستوى الأداء مع التجويد</span>${seg(s.id,"level",LEVELS.map(([v,t])=>[v,t,"lv "+v]),r.level)}</div>
         ${rangeRow(s.id,"مقدار الحفظ اليومي","hifzFrom","hifzTo",r)}
         ${rangeRow(s.id,"مقدار المراجعة اليومية","revFrom","revTo",r)}
+        ${rangeRow(s.id,`مقدار حفظ الغد <span class="hint">(يلزم الطالب سماعه كاملًا للشيخ المنشاوي قبل التسميع)</span>`,"nextFrom","nextTo",r).replace('class="crit range"','class="crit range next-row"')}
         <div class="crit notes"><label for="nt-${s.id}">ملاحظات المعلم <span class="hint">(يراها الطالب في صفحته)</span></label><textarea id="nt-${s.id}" data-sid="${s.id}" placeholder="ملاحظة على أداء الطالب اليوم…">${esc(r.notes||"")}</textarea></div>
       </div></article>`;
   }).join("");
@@ -596,14 +613,14 @@ function renderCards(){
 function renderSheet(){
   const ks=weekKeysOf(state.sel),best=bestIds(ks);
   const yn=v=>v===true?`<td class="ok">✓</td>`:v===false?`<td class="no">✗</td>`:`<td></td>`;
-  let h=`<thead><tr><th>اسم الطالب</th><th>اليوم</th><th>إحضار المصحف<br>مع المرسام</th><th>سماع المقطع<br>للشيخ المنشاوي</th><th>اكتمال نصاب<br>الحفظ اليومي</th><th>مقدار الحفظ</th><th>المراجعة<small>(الأوجه / 25)</small></th><th>مقدار المراجعة</th><th>مستوى الأداء<br>مع التجويد</th><th>الحضور<br>والغياب</th><th>الدرجة</th><th>ملاحظات</th></tr></thead><tbody>`;
+  let h=`<thead><tr><th>اسم الطالب</th><th>اليوم</th><th>إحضار المصحف<br>مع المرسام</th><th>سماع المقطع<br>للشيخ المنشاوي</th><th>اكتمال نصاب<br>الحفظ اليومي</th><th>مقدار الحفظ</th><th>المراجعة<small>(الأوجه / 25)</small></th><th>مقدار المراجعة</th><th>حفظ الغد</th><th>مستوى الأداء<br>مع التجويد</th><th>الحضور<br>والغياب</th><th>الدرجة</th><th>ملاحظات</th></tr></thead><tbody>`;
   STUDENTS.forEach(s=>{
     const st=stats(s.id,ks);
     ks.forEach((k,i)=>{
       const r=rec(k,s.id)||{},sc=score(k,s.id),lv=LEVELS.find(x=>x[0]===r.level);
       h+=`<tr class="${i===0?"grp":""}">${i===0?`<td class="sname" rowspan="7">${esc(s.name)}${best.has(s.id)?`<span class="inline-crown">${CROWN}</span>`:""}<div class="hint">المتوسط: ${st.avg??"–"}</div></td>`:""}
         <td class="dname">${wday.format(fromKey(k))}</td>${yn(r.mushaf)}${yn(hv(k,s.id))}${yn(r.hifz)}<td class="rng">${esc(fmtRange(r.hifzFrom,r.hifzTo))}</td>
-        <td class="${r.pages==null?"":r.pages>=TARGET?"ok":"no"}">${r.pages??""}</td><td class="rng">${esc(fmtRange(r.revFrom,r.revTo))}</td>
+        <td class="${r.pages==null?"":r.pages>=TARGET?"ok":"no"}">${r.pages??""}</td><td class="rng">${esc(fmtRange(r.revFrom,r.revTo))}</td><td class="rng">${esc(fmtRange(r.nextFrom,r.nextTo))}</td>
         <td>${lv?lv[1]:""}</td><td class="${r.att==="p"?"ok":r.att==="a"?"no":""}">${r.att==="p"?"حاضر":r.att==="a"?"غائب":""}</td>
         <td>${sc??""}</td><td class="note">${esc(r.notes||"")}</td></tr>`;
     });
@@ -752,6 +769,9 @@ function ayahList(from,to){
   return out;
 }
 function passageFor(sid){
+  if(P&&P.extraSel) return {...P.extraSel,key:"extra_"+sid,src:"مقطع إضافي؛ لا مانع من الزيادة، ولا يغيّر ما أنجزته.",locked:false,extra:true};
+  const la=latestAssign(sid);
+  if(la) return {from:la.from,to:la.to,key:la.date+"_"+sid,src:`المقطع الذي حدده المعلم لحفظك القادم (${hijriD.format(fromKey(la.date))})`,locked:true,assigned:true};
   const k=today(),L=state.listen[k+"_"+sid];
   if(L&&L.from) return {from:L.from,to:L.to,src:"مقطع اليوم",locked:true};
   const r=rec(k,sid);
@@ -762,28 +782,30 @@ function passageFor(sid){
   return null;
 }
 function ensurePlayer(){
-  const k=today()+"_"+state.sid,ps=passageFor(state.sid);
-  if(!ps){if(P&&P.key!==k)P=null;return null}
-  const list=ayahList(ps.from,ps.to),L=state.listen[k];
+  const ps=passageFor(state.sid);
+  if(!ps){if(P&&!P.playing)P=null;return null}
+  const k=ps.key||today()+"_"+state.sid,list=ayahList(ps.from,ps.to),L=state.listen[k];
   if(!P||P.key!==k||P.sig!==JSON.stringify([ps.from,ps.to])){
     if(P&&P.playing) return P;
-    P={key:k,sig:JSON.stringify([ps.from,ps.to]),from:ps.from,to:ps.to,src:ps.src,locked:ps.locked,list,idx:L&&!L.done?Math.min(L.idx||0,list.length):0,playing:false,replay:!!(L&&L.done),custom:P&&P.custom,picking:false};
+    P={key:k,sig:JSON.stringify([ps.from,ps.to]),from:ps.from,to:ps.to,list,idx:L&&!L.done?Math.min(L.idx||0,list.length):0,playing:false,replay:!!(L&&L.done)||!!ps.extra,custom:P&&P.custom,extraSel:P&&P.extraSel,picking:false};
   }
-  P.src=ps.src;P.locked=ps.locked;
+  P.src=ps.src;P.locked=ps.locked;P.assigned=!!ps.assigned;P.extra=!!ps.extra;
   return P;
 }
 function passageLabel(p){return fmtRange(p.from,p.to)}
 function listenCard(){
-  const p=ensurePlayer(),L=state.listen[today()+"_"+state.sid];
+  const p=ensurePlayer();let L=state.listen[today()+"_"+state.sid];
   const pickHtml=`<div class="lc-pick"><span>السورة</span><select id="lcS">${SURAH_OPTS}</select><span>من آية</span><input id="lcA" type="number" min="1" inputmode="numeric" placeholder="1"><span>إلى آية</span><input id="lcB" type="number" min="1" inputmode="numeric" placeholder="آخرها"><button class="btn" id="lcSet" type="button">اعتماد المقطع</button></div>`;
   if(!p) return `<section class="listen"><div class="lc-ic">${HEAD_IC}</div><div><div class="lc-k">ورد السماع اليومي | الشيخ محمد صدّيق المنشاوي (مرتّل)</div><h3>اختر المقطع الذي تحفظه اليوم</h3><div class="hint">لم يسجّل المعلم مقدار حفظك بعد؛ اختر السورة والآيات، ثم استمع إلى المقطع كاملًا.</div>${pickHtml}</div><span></span></section>`;
-  const total=p.list.length,done=!!(L&&L.done)&&!p.playing,idx=p.replay&&!p.playing?total:p.idx;
+  if(p.extra) L=null; else L=state.listen[p.key];
+  const total=p.list.length,done=!!(L&&L.done)&&!p.playing,idx=p.replay&&!p.playing&&!p.extra?total:p.idx;
   const cur=p.list[Math.min(p.idx,total-1)];
   return `<section class="listen${done?" done":""}" id="lcCard"><div class="lc-ic">${HEAD_IC}</div><div>
     <div class="lc-k">ورد السماع اليومي | الشيخ محمد صدّيق المنشاوي (مرتّل)</div>
-    <h3>${esc(passageLabel(p))} <small class="muted" style="display:inline">(${total} آية)</small></h3>
-    <div class="hint">${done?"✓ أتممت سماع مقطع اليوم كاملًا، وأُضيف إلى إنجازك.":esc(p.src)}${!p.locked&&!p.playing&&!(L&&L.idx)?` <button class="lc-link" id="lcChange" type="button">تغيير المقطع</button>`:""}</div>
+    <h3>${p.assigned?"مقطع حفظ الغد: ":""}${esc(passageLabel(p))} <small class="muted" style="display:inline">(${total} آية)</small></h3>
+    <div class="hint">${done?(p.assigned?"✓ أتممت سماع المقطع المقرر كاملًا؛ أنت جاهز للتسميع. ولا مانع من الزيادة.":"✓ أتممت سماع مقطع اليوم كاملًا، وأُضيف إلى إنجازك."):esc(p.src)+(p.assigned?"؛ استمع إليه كاملًا، فلا يُسمَّع لك حتى تتمّه.":"")}${!p.locked&&!p.extra&&!p.playing&&!(L&&L.idx)?` <button class="lc-link" id="lcChange" type="button">تغيير المقطع</button>`:""}</div>
     ${p.picking?pickHtml:""}
+    ${!p.playing&&(p.extra||done||!p.assigned)?`<div class="lc-links">${p.extra?`<button class="lc-link" id="lcBack" type="button">العودة إلى المقطع المقرر</button>`:`<button class="lc-link" id="lcExtra" type="button">الاستماع إلى مقطع إضافي</button>`}</div>`:""}
     <div class="lc-bar"><i id="lcBar" style="width:${total?idx/total*100:0}%"></i></div>
     <div class="lc-meta"><span id="lcCount">${idx} من ${total} آية</span><span id="lcNow">${p.playing&&cur?esc(surahName(cur[0]))+" — الآية "+cur[1]:done?"":"يُحتسب السماع عند اكتمال المقطع، ولا يمكن تقديمه أو تسريعه."}</span></div>
   </div><button class="lc-play" id="lcBtn" type="button" aria-label="${p.playing?"إيقاف مؤقت":"تشغيل"}">${p.playing?PAUSE_IC:PLAY_IC}</button></section>`;
@@ -848,12 +870,16 @@ function dayDetail(k){
 }
 $("v-me").addEventListener("click",e=>{
   if(e.target.closest("#lcBtn")){togglePlay();return}
-  if(e.target.closest("#lcChange")){const p=ensurePlayer();if(p){p.picking=true;renderMe()}return}
+  if(e.target.closest("#lcChange")){const p=ensurePlayer();if(p){p.picking=true;p.pickExtra=false;renderMe()}return}
+  if(e.target.closest("#lcExtra")){const p=ensurePlayer();if(p){p.picking=true;p.pickExtra=true;renderMe()}return}
+  if(e.target.closest("#lcBack")){try{AUD.pause()}catch(_){}if(P){P.extraSel=null;P.key=null;P.playing=false}ensurePlayer();renderMe();return}
   if(e.target.closest("#lcSet")){
     const s=parseInt($("lcS").value); if(!s){toast("اختر السورة أولًا.");return}
     const n=SURAHS[s-1][1]; let a=parseInt($("lcA").value)||1, b=parseInt($("lcB").value)||n;
     a=Math.min(Math.max(1,a),n); b=Math.min(Math.max(a,b),n);
-    P={...(P||{}),custom:{from:{s,a},to:{s,a:b}},key:null}; ensurePlayer(); renderMe(); return;
+    const sel={from:{s,a},to:{s,a:b}};
+    if(P&&P.pickExtra) P={...P,extraSel:sel,key:null,playing:false}; else P={...(P||{}),custom:sel,key:null};
+    ensurePlayer(); renderMe(); return;
   }
   const c=e.target.closest("[data-cal]"); if(c){state.calSel=c.dataset.cal;renderMe();return}
   const n=e.target.closest("[data-cnav]");
@@ -961,7 +987,7 @@ cards.addEventListener("change",e=>{
     if(t.dataset.part==="s"){const s=parseInt(t.value)||null;cur.s=s;if(cur.a&&s&&cur.a>SURAHS[s-1][1])cur.a=null}
     else{let a=parseInt(t.value)||null;if(a&&cur.s)a=Math.min(Math.max(1,a),SURAHS[cur.s-1][1]);cur.a=a}
     const patch={[rf]:cur.s||cur.a?cur:null};
-    const pair={hifzFrom:"hifzTo",revFrom:"revTo"}[rf];
+    const pair={hifzFrom:"hifzTo",revFrom:"revTo",nextFrom:"nextTo"}[rf];
     if(pair&&t.dataset.part==="s"&&cur.s&&!(r[pair]&&r[pair].s)) patch[pair]={s:cur.s,a:null};
     if(!r.att) patch.att="p";
     patchRecord(sid,patch); render(); return;
