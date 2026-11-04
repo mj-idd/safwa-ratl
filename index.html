@@ -228,6 +228,8 @@ td.rng{font-size:12px;white-space:nowrap}
 .lockhint{color:var(--bad);font-size:12px;font-weight:600}
 .lc-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px}
 .next-row{background:var(--gold-soft);border-radius:12px;padding:10px 12px}
+.range-row select.ayah,.lc-pick select.ayah{width:84px;max-width:84px}
+select.ayah:disabled{opacity:.5}
 @media (max-width:560px){.listen{grid-template-columns:1fr auto}.lc-ic{display:none}}
 
 /* accounts */
@@ -569,7 +571,8 @@ function seg(sid,field,opts,val){
 }
 const SURAH_OPTS='<option value="">— السورة —</option>'+SURAHS.map(([n],i)=>`<option value="${i+1}">${i+1}. ${n}</option>`).join("");
 function surahSel(sid,f,v){return `<select data-sid="${sid}" data-rf="${f}" data-part="s" aria-label="السورة">${SURAH_OPTS.replace(`value="${v&&v.s||""}"`,`value="${v&&v.s||""}" selected`)}</select>`}
-function ayahIn(sid,f,v){const m=v&&v.s?SURAHS[v.s-1][1]:286;return `<input type="number" min="1" max="${m}" inputmode="numeric" placeholder="آية" value="${v&&v.a||""}" data-sid="${sid}" data-rf="${f}" data-part="a" aria-label="رقم الآية">`}
+function ayahOpts(n,sel,ph){let o=`<option value="">${ph||"آية"}</option>`;for(let i=1;i<=n;i++)o+=`<option value="${i}"${sel===i?" selected":""}>${i}</option>`;return o}
+function ayahIn(sid,f,v){const n=v&&v.s?SURAHS[v.s-1][1]:0;return `<select class="ayah" data-sid="${sid}" data-rf="${f}" data-part="a" aria-label="رقم الآية"${n?"":" disabled"}>${ayahOpts(n,v&&v.a)}</select>`}
 function rangeRow(sid,label,fromF,toF,r){return `<div class="crit range"><span class="lbl">${label}</span><div class="range-row"><div class="end"><span class="lab">من</span>${surahSel(sid,fromF,r[fromF])}${ayahIn(sid,fromF,r[fromF])}</div><div class="end"><span class="lab">إلى</span>${surahSel(sid,toF,r[toF])}${ayahIn(sid,toF,r[toF])}</div></div></div>`}
 function listenBadge(k,sid){
   const {a,L}=listenFor(k,sid);
@@ -795,7 +798,7 @@ function ensurePlayer(){
 function passageLabel(p){return fmtRange(p.from,p.to)}
 function listenCard(){
   const p=ensurePlayer();let L=state.listen[today()+"_"+state.sid];
-  const pickHtml=`<div class="lc-pick"><span>السورة</span><select id="lcS">${SURAH_OPTS}</select><span>من آية</span><input id="lcA" type="number" min="1" inputmode="numeric" placeholder="1"><span>إلى آية</span><input id="lcB" type="number" min="1" inputmode="numeric" placeholder="آخرها"><button class="btn" id="lcSet" type="button">اعتماد المقطع</button></div>`;
+  const pickHtml=`<div class="lc-pick"><span>السورة</span><select id="lcS">${SURAH_OPTS}</select><span>من آية</span><select id="lcA" class="ayah" disabled><option value="">آية</option></select><span>إلى آية</span><select id="lcB" class="ayah" disabled><option value="">آية</option></select><button class="btn" id="lcSet" type="button">اعتماد المقطع</button></div>`;
   if(!p) return `<section class="listen"><div class="lc-ic">${HEAD_IC}</div><div><div class="lc-k">ورد السماع اليومي | الشيخ محمد صدّيق المنشاوي (مرتّل)</div><h3>اختر المقطع الذي تحفظه اليوم</h3><div class="hint">لم يسجّل المعلم مقدار حفظك بعد؛ اختر السورة والآيات، ثم استمع إلى المقطع كاملًا.</div>${pickHtml}</div><span></span></section>`;
   if(p.extra) L=null; else L=state.listen[p.key];
   const total=p.list.length,done=!!(L&&L.done)&&!p.playing,idx=p.replay&&!p.playing&&!p.extra?total:p.idx;
@@ -868,6 +871,10 @@ function dayDetail(k){
     <li><span>مستوى الأداء مع التجويد</span><b>${lv?lv[1]:"—"}</b></li></ul>
     ${r.notes?`<div class="tnote">ملاحظة المعلم: ${esc(r.notes)}</div>`:""}`;
 }
+$("v-me").addEventListener("change",e=>{
+  if(e.target.id==="lcS"){const s=parseInt(e.target.value),n=s?SURAHS[s-1][1]:0;$("lcA").innerHTML=ayahOpts(n,n?1:null);$("lcB").innerHTML=ayahOpts(n,n||null);$("lcA").disabled=$("lcB").disabled=!n}
+  if(e.target.id==="lcA"){const a=parseInt(e.target.value)||1,b=$("lcB");if((parseInt(b.value)||0)<a)b.value=String(a)}
+});
 $("v-me").addEventListener("click",e=>{
   if(e.target.closest("#lcBtn")){togglePlay();return}
   if(e.target.closest("#lcChange")){const p=ensurePlayer();if(p){p.picking=true;p.pickExtra=false;renderMe()}return}
