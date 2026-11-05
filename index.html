@@ -324,6 +324,27 @@ select.ayah:disabled{opacity:.5}
 .install b{display:block;color:var(--brand);font-size:14.5px}
 @media (display-mode:standalone){.install{display:none}}
 .install a.btn{text-decoration:none}
+.live{margin-top:14px;border-radius:16px;border:1px solid var(--line);background:var(--paper);padding:14px 16px;display:grid;gap:10px}
+.live-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-h h3{margin:0;font-size:16px;color:var(--brand)}
+.live-h small{color:var(--ink-2);font-size:13px}
+.live-ic{width:38px;height:38px;border-radius:11px;background:var(--gold-soft);color:var(--brand);display:grid;place-items:center;flex:none}
+.live-ic svg{width:20px;height:20px}
+.live-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.live-row input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;background:#fff}
+.live .ghost{padding:8px 12px;font-size:13.5px}
+.live .hint{font-size:12.5px;color:var(--ink-2)}
+.live.on{background:linear-gradient(135deg,#ecf8f0,#f7fcf9);border:1.5px solid #3aa76d}
+.live.on .live-ic{background:#1f8a4c;color:#fff}
+.live.on h3{color:#17703d}
+.live-badge{display:inline-flex;align-items:center;gap:7px;background:#1f8a4c;color:#fff;border-radius:99px;padding:3px 12px 3px 10px;font-size:13px;font-weight:700}
+.live-dot{width:9px;height:9px;border-radius:50%;background:#7dffb0;box-shadow:0 0 0 0 rgba(125,255,176,.8);animation:livePulse 1.6s infinite}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(125,255,176,.8)}70%{box-shadow:0 0 0 9px rgba(125,255,176,0)}100%{box-shadow:0 0 0 0 rgba(125,255,176,0)}}
+.btn.go{background:#1f8a4c;text-decoration:none}
+.btn.go:hover{background:#17703d}
+.btn.stop{background:#a33a2b}
+.live-link{direction:ltr;font-size:13px;color:#17703d;word-break:break-all}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
 .iguide{position:fixed;inset:0;z-index:90;background:rgba(59,37,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}
 .iguide[hidden]{display:none}
 .ig-card{background:#fff;border-radius:20px;width:100%;max-width:440px;max-height:92vh;overflow:auto;padding:18px 18px 14px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -408,6 +429,7 @@ select.ayah:disabled{opacity:.5}
 </section>
 
 <main class="wrap" id="app" hidden>
+  <section id="liveBox" hidden></section>
   <nav class="tabs" id="tabs" role="tablist"></nav>
   <div id="banner" class="banner" hidden></div>
 
@@ -1086,6 +1108,81 @@ cards.addEventListener("change",e=>{
 cards.addEventListener("input",e=>{if(e.target.matches("textarea")) patchRecord(e.target.dataset.sid,{notes:e.target.value},900)});
 
 /* ---------- auth & data ---------- */
+/* ---------- remote halaqa (live session) ---------- */
+const LIVE_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5z"/></svg>';
+const timeFmt=new Intl.DateTimeFormat("ar-SA-u-nu-latn",{hour:"numeric",minute:"2-digit"});
+function livePlatform(u){
+  if(/meet\.google\.com/i.test(u)) return "Google Meet";
+  if(/zoom\.us/i.test(u)) return "Zoom";
+  if(/jit\.si|jitsi/i.test(u)) return "Jitsi Meet";
+  if(/teams\.(microsoft|live)\.com/i.test(u)) return "Microsoft Teams";
+  return "اتصال مباشر";
+}
+function liveOn(){
+  const L=state.live;
+  if(!L||!L.active||!L.url) return false;
+  const t=Date.parse(L.startedAt||"");
+  return !(t&&Date.now()-t>5*3600e3);
+}
+function renderLive(){
+  const box=$("liveBox"); if(!box) return;
+  const L=state.live||{}, on=liveOn();
+  if(state.mode==="student"){
+    if(!on){box.hidden=true;box.innerHTML="";document.title="منصة صفوة رتّل";return}
+    const st=L.startedAt?timeFmt.format(new Date(L.startedAt)):"";
+    box.hidden=false;
+    box.innerHTML=`<div class="live on" role="status"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><span class="live-badge"><i class="live-dot"></i>الحلقة تعمل الآن</span><h3 style="margin-top:6px">حلقة صفوة رتّل عن بُعد</h3><small>${st?`بدأها المعلم الساعة ${st}، `:""}عبر ${esc(livePlatform(L.url))}.</small></div><a class="btn go" href="${esc(L.url)}" target="_blank" rel="noopener">انضمّ الآن</a></div></div>`;
+    document.title="● الحلقة تعمل الآن | صفوة رتّل";
+    return;
+  }
+  if(state.mode!=="staff"){box.hidden=true;return}
+  box.hidden=false;
+  if(on){
+    const st=L.startedAt?timeFmt.format(new Date(L.startedAt)):"";
+    box.innerHTML=`<div class="live on"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><span class="live-badge"><i class="live-dot"></i>الحلقة تعمل الآن</span><h3 style="margin-top:6px">الحلقة عن بُعد مفتوحة للطلاب</h3><small>${st?`بدأت الساعة ${st}، `:""}عبر ${esc(livePlatform(L.url))}. تظهر الآن باللون الأخضر في حسابات الطلاب.</small></div></div>
+      <div class="live-link">${esc(L.url)}</div>
+      <div class="live-row"><a class="btn go" href="${esc(L.url)}" target="_blank" rel="noopener">دخول الحلقة</a><button class="ghost" type="button" id="liveCopy">نسخ الرابط</button><button class="btn stop" type="button" id="liveEnd">إنهاء الحلقة</button></div></div>`;
+    $("liveCopy").onclick=async()=>{try{await navigator.clipboard.writeText(L.url);toast("نُسخ رابط الحلقة.")}catch(_){prompt("انسخ الرابط:",L.url)}};
+    $("liveEnd").onclick=async()=>{
+      if(!confirm("إنهاء الحلقة عن بُعد؟ ستختفي من حسابات الطلاب."))return;
+      try{await db.collection("live").doc("current").set({active:false,endedAt:new Date().toISOString(),lastUrl:L.url},{merge:true});toast("انتهت الحلقة عن بُعد.")}
+      catch(_){toast("تعذّر إنهاء الحلقة؛ تحقق من الاتصال.")}
+    };
+    return;
+  }
+  const last=L.lastUrl||L.url||"";
+  box.innerHTML=`<div class="live"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><h3>الحلقة عن بُعد</h3><small>أنشئ اجتماعًا مرئيًا، ثم اضغط «بدء الحلقة الآن» ليظهر للطلاب باللون الأخضر مع زر الانضمام.</small></div></div>
+    <div class="live-row"><input id="liveUrl" type="url" dir="ltr" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://meet.google.com/abc-defg-hij" value="${esc(last)}"><button class="btn go" type="button" id="liveStart">بدء الحلقة الآن</button></div>
+    <div class="live-row"><a class="ghost" href="https://meet.google.com/new" target="_blank" rel="noopener" style="text-decoration:none">إنشاء اجتماع Google Meet</a><button class="ghost" type="button" id="liveJitsi">إنشاء رابط Jitsi مجاني</button></div>
+    <div class="hint">في Google Meet: اضغط «إنشاء اجتماع»، وانسخ رابطه من المتصفح، ثم الصقه في الخانة. يصلح أيضًا رابط Zoom أو Teams أو غيرهما. ورابط Meet الثابت يمكن استعماله كل يوم.</div></div>`;
+  $("liveJitsi").onclick=()=>{
+    const c="abcdefghjkmnpqrstuvwxyz23456789";let r="";const a=new Uint32Array(10);crypto.getRandomValues(a);a.forEach(x=>r+=c[x%c.length]);
+    $("liveUrl").value="https://meet.jit.si/SafwaRatl-"+r;toast("أُنشئ رابط Jitsi؛ اضغط «بدء الحلقة الآن».");
+  };
+  $("liveStart").onclick=async()=>{
+    let u=($("liveUrl").value||"").trim();
+    if(u&&!/^https?:\/\//i.test(u)) u="https://"+u;
+    if(!/^https:\/\/[^\s"<>]+\.[^\s"<>]+/i.test(u)){toast("الصق رابط الاجتماع أولًا (يبدأ بـ https://).");$("liveUrl").focus();return}
+    const btn=$("liveStart");btn.disabled=true;
+    try{
+      const me=firebase.auth().currentUser;
+      await db.collection("live").doc("current").set({active:true,url:u,lastUrl:u,platform:livePlatform(u),startedAt:new Date().toISOString(),startedBy:(me&&me.email)||"",endedAt:null});
+      toast("بدأت الحلقة، وظهرت للطلاب.");
+      window.open(u,"_blank","noopener");
+    }catch(e){btn.disabled=false;toast(e&&e.code==="permission-denied"?"لا صلاحية لبدء الحلقة؛ يلزم تحديث قواعد قاعدة البيانات.":"تعذّر بدء الحلقة؛ تحقق من الاتصال.")}
+  };
+}
+function watchLive(){
+  let was=null;
+  unsubs.push(db.collection("live").doc("current").onSnapshot(d=>{
+    state.live=d.exists?d.data():null;
+    const on=liveOn();
+    if(state.mode==="student"&&was===false&&on){toast("بدأت الحلقة عن بُعد، انضمّ الآن.");try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(_){}}
+    was=on; renderLive();
+  },()=>{state.live=null;renderLive()}));
+}
+setInterval(()=>{if(state.mode&&state.live&&state.live.active)renderLive()},60000);
+
 function stopSubs(){unsubs.forEach(u=>{try{u()}catch(_){}});unsubs=[]}
 function enter(mode,sid,label){
   state.mode=mode; state.sid=sid||null;
@@ -1138,16 +1235,19 @@ async function onLogin(u){
     enter("student",me.sid,`الطالب: <b>${esc(nm||"")}</b>`);
     listen(db.collection("records").where("sid","==",me.sid),onRecords);
     listen(db.collection("listen").where("sid","==",me.sid),onListen);
+    watchLive();
   }else{
     enter("staff",null,`مسجّل الدخول: <b dir="ltr">${esc(u.email||"")}</b>`);
     listen(db.collection("records"),onRecords);
     listen(db.collection("listen"),onListen);
     listen(db.collection("students"),onStudents);
     listen(db.collection("users"),docs=>{const o={};docs.forEach(d=>{o[d.id]=d.data()});state.users=o;if(state.view==="accounts")renderAccounts()});
+    watchLive();
   }
+  renderLive();
 }
 function onLogout(){
-  stopSubs(); db=null; state.mode=null; state.records={}; state.users={}; state.listen={};
+  stopSubs(); db=null; state.mode=null; state.live=null; $("liveBox").hidden=true; document.title="منصة صفوة رتّل"; state.records={}; state.users={}; state.listen={};
   try{AUD.pause()}catch(_){} P=null; STUDENTS=DEFAULT_STUDENTS.slice();
   $("app").hidden=true; $("userbar").hidden=true; $("loginWrap").hidden=false;
 }
