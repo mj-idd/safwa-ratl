@@ -323,6 +323,23 @@ select.ayah:disabled{opacity:.5}
 .install div{flex:1;min-width:180px;font-size:13.5px}
 .install b{display:block;color:var(--brand);font-size:14.5px}
 @media (display-mode:standalone){.install{display:none}}
+.install a.btn{text-decoration:none}
+.iguide{position:fixed;inset:0;z-index:90;background:rgba(59,37,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.iguide[hidden]{display:none}
+.ig-card{background:#fff;border-radius:20px;width:100%;max-width:440px;max-height:92vh;overflow:auto;padding:18px 18px 14px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.ig-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ig-head img{width:48px;height:48px;border-radius:12px;border:1px solid var(--line)}
+.ig-head b{display:block;color:var(--brand);font-size:16px}
+.ig-head span{font-size:13px;color:var(--ink-2)}
+.ig-warn{background:#fff4e5;border:1px solid #f0c27a;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.ig-warn b{color:#9a5b00}
+.ig-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ig-steps li{display:flex;gap:12px;align-items:flex-start;background:var(--gold-soft);border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.7}
+.ig-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;margin-top:2px}
+.ig-ic{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#fff;border:1px solid var(--line);vertical-align:middle;margin:0 3px;color:#0a7aff}
+.ig-ic svg{width:18px;height:18px}
+.ig-actions{display:flex;gap:8px;margin-top:14px}
+.ig-actions .btn{flex:1;justify-content:center}
 
 @media (max-width:760px){
   .cal-wrap{grid-template-columns:1fr}
@@ -376,7 +393,8 @@ select.ayah:disabled{opacity:.5}
   <button class="ghost" id="logout">تسجيل الخروج</button>
 </div>
 
-<div class="wrap" id="installBar" hidden><div class="install"><img src="icon-192.png" alt=""><div><b>ثبّت منصة صفوة رتّل على جوالك</b><span id="installHint">لتفتحها بضغطة من الشاشة الرئيسية مثل أي تطبيق.</span></div><button class="btn" id="installBtn" type="button">تثبيت التطبيق</button><button class="ghost" id="installNo" type="button">ليس الآن</button></div></div>
+<div class="wrap" id="installBar" hidden><div class="install"><img src="icon-192.png" alt=""><div><b>ثبّت منصة صفوة رتّل على جوالك</b><span id="installHint">لتفتحها بضغطة من الشاشة الرئيسية مثل أي تطبيق.</span></div><button class="btn" id="installBtn" type="button">تثبيت التطبيق</button><a class="btn" id="apkBtn" href="safwa-ratl.apk" download hidden>تحميل تطبيق أندرويد</a><button class="btn" id="iosBtn" type="button" hidden>طريقة التثبيت</button><button class="ghost" id="installNo" type="button">ليس الآن</button></div></div>
+<div class="iguide" id="iosGuide" hidden><div class="ig-card" role="dialog" aria-modal="true" aria-label="طريقة تثبيت التطبيق على الآيفون"><div class="ig-head"><img src="apple-touch-icon.png" alt=""><div><b>تثبيت «صفوة رتّل» على الآيفون</b><span>دقيقة واحدة، ثم يفتح من الشاشة الرئيسية مثل أي تطبيق.</span></div></div><div class="ig-warn" id="igWarn" hidden></div><ol class="ig-steps" id="igSteps"></ol><div class="ig-actions"><button class="btn" id="igCopy" type="button">نسخ رابط المنصة</button><button class="ghost" id="igClose" type="button">إغلاق</button></div></div></div>
 
 <section class="wrap" id="loginWrap" hidden>
   <form class="login" id="loginForm">
@@ -1150,18 +1168,65 @@ if(!window.firebase||!cfg||!cfg.apiKey||cfg.apiKey.indexOf("YOUR_")===0){
   $("logout").onclick=()=>auth.signOut();
 }
 
-/* ---------- app install (PWA) ---------- */
+/* ---------- app install (PWA / Android app / iPhone guide) ---------- */
 if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 (function(){
+  const ua=navigator.userAgent;
+  const inAndroidApp=!!window.Capacitor||/; wv\)/.test(ua);
   const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
-  let dismissed=false; try{dismissed=localStorage.getItem("safwa-install-no")==="1"}catch(_){}
-  if(standalone||dismissed) return;
-  const bar=$("installBar"),btn=$("installBtn");let deferred=null;
-  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-  addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;bar.hidden=false;btn.hidden=false});
-  if(isIOS){bar.hidden=false;btn.hidden=true;$("installHint").textContent="في متصفح سفاري: اضغط زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية».";}
+  if(standalone||inAndroidApp) return;
+  let dismissedAt=0; try{dismissedAt=+localStorage.getItem("safwa-install-no")||0}catch(_){}
+  const bar=$("installBar"),btn=$("installBtn"),apk=$("apkBtn"),iosBtn=$("iosBtn"),guide=$("iosGuide");
+  const isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  const isAndroid=/android/i.test(ua);
+  const inApp=/FBAN|FBAV|Instagram|Line\/|WhatsApp|Snapchat|Telegram|Twitter|TikTok|musical_ly|GSA\//i.test(ua);
+  const otherIOSBrowser=/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua);
+  const recentlyDismissed=Date.now()-dismissedAt<3*864e5;
+  let deferred=null;
+  btn.hidden=true;
+  const ic={
+    share:'<span class="ig-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>',
+    add:'<span class="ig-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span>',
+    more:'<span class="ig-ic" style="font-weight:700;color:#0a7aff">•••</span>',
+    compass:'<span class="ig-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></span>'
+  };
+  function fillGuide(){
+    const w=$("igWarn"),st=$("igSteps");
+    if(inApp){
+      w.hidden=false;
+      w.innerHTML='<b>فتحت الرابط من داخل تطبيق آخر (مثل واتساب).</b> التثبيت لا يعمل من هنا؛ افتح الرابط في <b>سفاري</b> أولًا: اضغط '+ic.more+' أو '+ic.compass+' ثم «فتح في سفاري»، أو انسخ الرابط بالزر أدناه والصقه في سفاري.';
+    }else if(otherIOSBrowser){
+      w.hidden=false;
+      w.innerHTML='<b>أنت تستخدم متصفحًا غير سفاري.</b> الأسهل أن تنسخ الرابط بالزر أدناه وتفتحه في <b>سفاري</b>، ثم تتبع الخطوات.';
+    }else w.hidden=true;
+    st.innerHTML=[
+      'في سفاري، اضغط زر <b>المشاركة</b> '+ic.share+' أسفل الشاشة (أو أعلاها في الآيباد). إن لم تجده فاضغط '+ic.more+' ثم «مشاركة».',
+      'مرّر القائمة للأسفل واختر <b>«إضافة إلى الشاشة الرئيسية»</b> '+ic.add+'.',
+      'إن ظهر خيار <b>«فتح كتطبيق ويب»</b> فأبقه مفعّلًا، ثم اضغط <b>«إضافة»</b> أعلى الشاشة.',
+      'ستجد أيقونة <b>«صفوة رتّل»</b> على الشاشة الرئيسية؛ افتحها منها وسجّل الدخول مرة واحدة.'
+    ].map((t,n)=>'<li><span class="ig-n">'+(n+1)+'</span><span>'+t+'</span></li>').join("");
+  }
+  const openGuide=()=>{fillGuide();guide.hidden=false};
+  iosBtn.onclick=openGuide;
+  $("igClose").onclick=()=>{guide.hidden=true;try{localStorage.setItem("safwa-install-no",String(Date.now()))}catch(_){}};
+  guide.addEventListener("click",e=>{if(e.target===guide)guide.hidden=true});
+  $("igCopy").onclick=async()=>{
+    const url="https://mj-idd.github.io/safwa-ratl/";
+    try{await navigator.clipboard.writeText(url);$("igCopy").textContent="تم النسخ ✓"}
+    catch(_){prompt("انسخ هذا الرابط وافتحه في سفاري:",url)}
+  };
+  if(isIOS){
+    bar.hidden=recentlyDismissed;iosBtn.hidden=false;
+    $("installHint").textContent=inApp?"افتح الرابط في سفاري أولًا، ثم أضفه إلى الشاشة الرئيسية.":"من سفاري: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».";
+    if(!recentlyDismissed) setTimeout(openGuide,900);
+  }else if(isAndroid){
+    if(!recentlyDismissed) bar.hidden=false;
+    apk.hidden=false;
+    $("installHint").textContent="حمّل تطبيق أندرويد وثبّته، أو أضف المنصة إلى الشاشة الرئيسية.";
+  }
+  addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;btn.hidden=false;if(!recentlyDismissed)bar.hidden=false});
   btn.onclick=async()=>{if(!deferred)return;deferred.prompt();const c=await deferred.userChoice.catch(()=>null);deferred=null;if(c&&c.outcome==="accepted")bar.hidden=true};
-  $("installNo").onclick=()=>{bar.hidden=true;try{localStorage.setItem("safwa-install-no","1")}catch(_){}};
+  $("installNo").onclick=()=>{bar.hidden=true;try{localStorage.setItem("safwa-install-no",String(Date.now()))}catch(_){}};
   addEventListener("appinstalled",()=>{bar.hidden=true});
 })();
 </script>
