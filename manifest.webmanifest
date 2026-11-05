@@ -1,0 +1,20 @@
+{
+  "name": "صفوة رتّل | جمعية تحفيظ القرآن الكريم بنجران",
+  "short_name": "صفوة رتّل",
+  "description": "منصة المتابعة اليومية لحلقة صفوة رتّل لتأهيل طلاب مسابقة الملك سلمان بن عبدالعزيز لحفظ القرآن الكريم.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#faf7f1",
+  "theme_color": "#7b4a1f",
+  "categories": ["education"],
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
