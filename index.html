@@ -351,6 +351,56 @@ select.ayah:disabled{opacity:.5}
 .live-badge.off{background:#b3392a}
 .live-badge.off .live-dot{background:#ffb3a8;animation:none;box-shadow:none}
 .btn[aria-disabled=true]{background:#d9c9c4;color:#fff;pointer-events:none}
+.clips-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:26px 0 10px}
+.clips-h .sec-title{margin:0}
+.medals{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#fff8e6,#fcefd0);border:1px solid var(--gold-2);border-radius:99px;padding:4px 14px 4px 10px;font-weight:700;color:var(--brand);font-size:14px}
+.medal{width:22px;height:22px;flex:none}
+.clip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px}
+.clip{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;text-align:start;padding:0;cursor:pointer;color:inherit;font:inherit}
+.clip:hover{border-color:var(--gold-2);box-shadow:0 8px 22px -14px rgba(123,74,31,.5)}
+.clip.got{border:1.5px solid var(--gold)}
+.clip-th{position:relative;aspect-ratio:16/9;background:#2b1a0f center/cover no-repeat;display:grid;place-items:center}
+.clip-th .pl{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;color:var(--brand);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.clip-th .pl svg{width:22px;height:22px;margin-inline-start:3px}
+.clip-th .tag{position:absolute;top:8px;inset-inline-start:8px;background:var(--brand);color:#fff;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700}
+.clip-th .tag.gold{background:linear-gradient(135deg,#c8963f,#e2c07a);color:#3b2516;display:inline-flex;align-items:center;gap:5px}
+.clip-th .tag.gold .medal{width:16px;height:16px}
+.clip-b{padding:10px 12px 12px;display:grid;gap:6px}
+.clip-b b{font-size:15px;color:var(--ink);line-height:1.5}
+.clip-b p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.6}
+.clip-b .meter{margin-top:2px}
+.clip-st{font-size:12.5px;color:var(--ink-2)}
+.clip-st.ok{color:#8a5a12;font-weight:700}
+.clip-empty{background:var(--paper);border:1px dashed var(--line);border-radius:14px;padding:16px;text-align:center;color:var(--ink-2);font-size:14px}
+.cplayer{position:fixed;inset:0;z-index:95;background:rgba(30,18,10,.72);display:flex;align-items:center;justify-content:center;padding:12px}
+.cplayer[hidden]{display:none}
+.cp-card{background:#fff;border-radius:18px;width:100%;max-width:880px;max-height:96vh;overflow:auto;padding:12px 14px 14px;display:grid;gap:10px}
+.cp-h{display:flex;align-items:center;gap:10px}
+.cp-h b{flex:1;color:var(--brand);font-size:16px}
+.cp-frame{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
+.cp-frame iframe,.cp-frame video,.cp-frame>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.cp-row{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.cp-row .meter{flex:1}
+.cp-done{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff8e6,#fcefd0);border:1px solid var(--gold-2);border-radius:12px;padding:10px 12px;color:var(--brand);font-weight:700}
+.cp-done .medal{width:34px;height:34px}
+.clip-form{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.clip-form h3{grid-column:1/-1;margin:0;color:var(--brand);font-size:16px}
+.clip-form label{display:grid;gap:4px;font-size:12.5px;color:var(--ink-2);font-weight:600;min-width:0}
+.clip-form label.full{grid-column:1/-1}
+.clip-form input{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff}
+.clip-form textarea{min-height:54px}
+.clip-form .row{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.clip-form .hint{font-size:12.5px;color:var(--ink-2)}
+.sclip{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:200px 1fr}
+.sclip .clip-th{aspect-ratio:auto;min-height:112px}
+.sclip-b{padding:10px 14px;display:grid;gap:6px;font-size:13.5px}
+.sclip-b b{font-size:15px}
+.sclip-b a{direction:ltr;font-size:12.5px;color:var(--brand-2);word-break:break-all}
+.who{display:flex;flex-wrap:wrap;gap:6px}
+.who span{border-radius:99px;padding:2px 10px;font-size:12.5px;background:var(--sand);color:var(--ink-2)}
+.who span.got{background:linear-gradient(135deg,#fff3d6,#fbe5b0);color:#7a4d0c;font-weight:700}
+.sclips{display:grid;gap:12px;margin-top:12px}
+@media (max-width:600px){.clip-form{grid-template-columns:1fr}.sclip{grid-template-columns:1fr}.sclip .clip-th{aspect-ratio:16/9}}
 .iguide{position:fixed;inset:0;z-index:90;background:rgba(59,37,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}
 .iguide[hidden]{display:none}
 .ig-card{background:#fff;border-radius:20px;width:100%;max-width:440px;max-height:92vh;overflow:auto;padding:18px 18px 14px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -475,11 +525,13 @@ select.ayah:disabled{opacity:.5}
 
   <div id="v-accounts" class="view" hidden></div>
   <div id="v-me" class="view" hidden></div>
+  <div id="v-clips" class="view" hidden></div>
 
   <p class="foot">جمعية رتّل لتحفيظ القرآن الكريم بنجران | حلقة صفوة رتّل</p>
 </main>
 <div id="printRoot"></div>
 <div class="toast" id="toast" role="status"></div>
+<div class="cplayer" id="clipPlayer" hidden><div class="cp-card" role="dialog" aria-modal="true" aria-labelledby="cpTitle"><div class="cp-h"><b id="cpTitle"></b><button class="ghost" id="cpClose" type="button">إغلاق</button></div><div class="cp-frame" id="cpFrame"></div><div class="cp-row"><div class="meter" id="cpMeter"><i id="cpBar" style="width:0%"></i></div><span id="cpPct">0%</span></div><div id="cpMsg" class="hint"></div></div></div>
 
 <script>
 const DEFAULT_STUDENTS=[
@@ -511,7 +563,7 @@ const SUP="عبدالمجيد بن عبدالله الجابري", TEA="الشي
 const $=id=>document.getElementById(id);
 
 /* ---------- auto-update: always run the newest version ---------- */
-const APP_VER="2026-11-05.11";
+const APP_VER="2026-11-05.12";
 (function(){
   let busy=false;
   async function check(){
@@ -561,7 +613,7 @@ function monthKeysOf(k){
 }
 const periodKeys=(kind,k)=>kind==="month"?monthKeysOf(k):weekKeysOf(k);
 
-const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},listen:{},assign:{},seeded:false,rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
+const state={mode:null,sid:null,view:"eval",sel:today(),records:{},users:{},listen:{},clips:[],views:{},assign:{},seeded:false,rep:{kind:"week",anchor:today(),who:"all"},cal:today(),calSel:today()};
 let db=null,cfg=window.FIREBASE_CONFIG,unsubs=[];
 
 const rec=(k,sid)=>state.records[k+"_"+sid];
@@ -621,7 +673,7 @@ function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");cle
 function bannerMsg(t){const b=$("banner");b.textContent=t;b.hidden=!t}
 
 /* ---------- tabs & routing ---------- */
-const TABS={staff:[["eval","التقييم اليومي"],["sheet","الكشف الأسبوعي"],["reports","التقارير"],["accounts","الطلاب والحسابات"]],
+const TABS={staff:[["eval","التقييم اليومي"],["sheet","الكشف الأسبوعي"],["reports","التقارير"],["clips","مقاطع للفائدة"],["accounts","الطلاب والحسابات"]],
             student:[["me","إنجازاتي"],["reports","تقاريري"]]};
 function renderTabs(){
   $("tabs").innerHTML=TABS[state.mode].map(([v,t])=>`<button class="tab" role="tab" data-view="${v}" aria-selected="${state.view===v}">${t}</button>`).join("");
@@ -644,6 +696,7 @@ function render(){
   if(state.view==="reports") renderReports();
   if(state.view==="accounts") renderAccounts();
   if(state.view==="me") renderMe();
+  if(state.view==="clips") renderClipsStaff();
 }
 
 /* ---------- staff: week, board, cards, sheet ---------- */
@@ -838,8 +891,8 @@ function renderMe(){
   let lastPoint=null;
   Object.keys(state.records).sort().forEach(id=>{const r=state.records[id];if(r.sid===sid&&r.att!=="a"){if(r.hifzTo&&r.hifzTo.s)lastPoint=r.hifzTo;else if(r.hifzFrom&&r.hifzFrom.s)lastPoint=r.hifzFrom}});
   const first=s.name.split(" ").slice(0,s.name.startsWith("عبد ")?2:1).join(" ");
-  let html=`<section class="hero">${ring(w.avg)}<div><h2>أهلًا يا ${esc(first)}</h2><p>${w.n?`تقديرك هذا الأسبوع: <b>${g[1]}</b>، في ${w.n} ${w.n===1?"يوم مُقيَّم":"أيام مُقيَّمة"}.`:"لم يُسجَّل لك تقييم هذا الأسبوع بعد."}</p>${lastPoint?`<span class="reach">${CROWN.replace('viewBox','width="16" height="16" viewBox')}وصلت في الحفظ إلى: ${esc(fmtPoint(lastPoint))}</span>`:""}</div></section>`;
-  html+=listenCard()+mushafHTML();
+  let html=`<section class="hero">${ring(w.avg)}<div><h2>أهلًا يا ${esc(first)}</h2><p>${w.n?`تقديرك هذا الأسبوع: <b>${g[1]}</b>، في ${w.n} ${w.n===1?"يوم مُقيَّم":"أيام مُقيَّمة"}.`:"لم يُسجَّل لك تقييم هذا الأسبوع بعد."}</p>${lastPoint?`<span class="reach">${CROWN.replace('viewBox','width="16" height="16" viewBox')}وصلت في الحفظ إلى: ${esc(fmtPoint(lastPoint))}</span>`:""}${myMedals()?`<span class="reach" style="margin-inline-start:6px">${MEDAL}شارات التميّز: ${myMedals()}</span>`:""}</div></section>`;
+  html+=listenCard()+mushafHTML()+clipsHTML();
   const t=(v,lbl,frac)=>`<div class="tile"><b>${v}</b><span>${lbl}</span>${frac!==undefined?`<div class="meter${frac>=1?" full":""}"><i style="width:${Math.min(100,(frac||0)*100)}%"></i></div>`:""}</div>`;
   html+=`<h2 class="sec-title">إنجازاتي في شهر ${hMonth.format(fromKey(mk[0]))}</h2><div class="tiles">
     ${t(`${m.p}<small class="muted" style="display:inline"> / ${m.p+m.a}</small>`,"أيام الحضور",m.p+m.a?m.p/(m.p+m.a):0)}
@@ -1140,6 +1193,168 @@ cards.addEventListener("change",e=>{
 cards.addEventListener("input",e=>{if(e.target.matches("textarea")) patchRecord(e.target.dataset.sid,{notes:e.target.value},900)});
 
 /* ---------- auth & data ---------- */
+/* ---------- benefit clips & excellence badges ---------- */
+const MEDAL='<svg class="medal" viewBox="0 0 32 32" aria-hidden="true"><path d="M10 2h5l3 8h-5z" fill="#a0652f"/><path d="M22 2h-5l-3 8h5z" fill="#7b4a1f"/><circle cx="16" cy="20" r="10" fill="#e2c07a"/><circle cx="16" cy="20" r="7.4" fill="#c8963f"/><path d="M16 14.6l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill="#fff8e6"/></svg>';
+function ytIdOf(u){const m=String(u||"").match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/))([\w-]{11})/i);return m?m[1]:null}
+function clipKind(u){if(ytIdOf(u))return "yt";if(/^https:\/\/[^\s]+\.(mp4|webm|m4v|mov|ogv)(\?[^\s]*)?(#[^\s]*)?$/i.test(u))return "video";return null}
+function clipThumb(c){return c.kind==="yt"&&c.yt?`https://i.ytimg.com/vi/${c.yt}/hqdefault.jpg`:""}
+function viewOf(cid,sid){return state.views[cid+"_"+sid]||null}
+function myMedals(){if(state.mode!=="student")return 0;return state.clips.filter(c=>{const v=viewOf(c.id,state.sid);return v&&v.done}).length}
+function clipsHTML(){
+  const n=myMedals();
+  let h=`<div class="clips-h"><h2 class="sec-title">مقاطع للفائدة <small>شاهد المقطع كاملًا لتحصل على شارة التميّز.</small></h2>${n?`<span class="medals">${MEDAL}شارات التميّز: ${n}</span>`:""}</div>`;
+  if(!state.clips.length) return h+`<div class="clip-empty">لا توجد مقاطع بعد؛ ستظهر هنا حين يرسلها المشرف أو المعلم.</div>`;
+  h+=`<div class="clip-grid">`+state.clips.map(c=>{
+    const v=viewOf(c.id,state.sid),pct=Math.round(((v&&v.pct)||0)*100),got=v&&v.done,th=clipThumb(c);
+    const tag=got?`<span class="tag gold">${MEDAL}شارة تميّز</span>`:(!v?`<span class="tag">جديد</span>`:"");
+    const st=got?`<span class="clip-st ok">أحسنت! حصلت على شارة التميّز.</span>`:(pct?`<div class="meter"><i style="width:${pct}%"></i></div><span class="clip-st">شاهدت ${pct}% من المقطع؛ أكمله لتحصل على الشارة.</span>`:`<span class="clip-st">لم تشاهده بعد.</span>`);
+    return `<button type="button" class="clip${got?" got":""}" data-clip="${esc(c.id)}"><div class="clip-th" style="${th?`background-image:url('${th}')`:""}"><span class="pl">${PLAY_IC}</span>${tag}</div><div class="clip-b"><b>${esc(c.title)}</b>${c.desc?`<p>${esc(c.desc)}</p>`:""}${st}</div></button>`;
+  }).join("")+`</div>`;
+  return h;
+}
+/* player: counts only the parts actually played, in 5-second blocks; 90% earns the badge */
+let CP=null,ytReady=null;
+function loadYT(){
+  if(window.YT&&window.YT.Player) return Promise.resolve();
+  if(ytReady) return ytReady;
+  ytReady=new Promise((res,rej)=>{
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{prev&&prev();res()};
+    const sc=document.createElement("script");sc.src="https://www.youtube.com/iframe_api";sc.onerror=()=>{ytReady=null;rej()};document.head.appendChild(sc);
+  });
+  return ytReady;
+}
+function cpUpdate(){
+  if(!CP) return;
+  const blocks=CP.dur?Math.max(1,Math.ceil(CP.dur/5)):0;
+  const pct=blocks?Math.min(1,CP.seen.size/blocks):0;
+  CP.pct=pct;
+  $("cpBar").style.width=Math.round(pct*100)+"%";
+  $("cpPct").textContent=Math.round(pct*100)+"%";
+  $("cpMeter").classList.toggle("full",CP.done);
+  if(!CP.done&&pct>=0.9){CP.done=true;CP.dirty=true;cpSave(true);
+    $("cpMsg").innerHTML=`<div class="cp-done">${MEDAL}<span>أحسنت! أتممت مشاهدة المقطع، وحصلت على شارة التميّز.</span></div>`;
+    toast("حصلت على شارة التميّز!");
+  }
+}
+function cpTick(t,playing){
+  if(!CP) return;
+  if(playing&&CP.last!=null&&t>CP.last&&t-CP.last<=3){
+    const a=Math.floor(CP.last/5),b=Math.floor(t/5);
+    for(let i=a;i<=b;i++){if(!CP.seen.has(i)){CP.seen.add(i);CP.dirty=true}}
+  }
+  CP.last=t; cpUpdate();
+}
+async function cpSave(force){
+  if(!CP||!CP.dirty||state.mode!=="student") return;
+  if(!force&&Date.now()-(CP.savedAt||0)<8000) return;
+  CP.dirty=false;CP.savedAt=Date.now();
+  const prev=viewOf(CP.clip.id,state.sid)||{};
+  const body={clipId:CP.clip.id,sid:state.sid,pct:Math.round(CP.pct*1000)/1000,dur:Math.round(CP.dur||0),seen:[...CP.seen].sort((a,b)=>a-b),done:!!(CP.done||prev.done),updatedAt:new Date().toISOString()};
+  if(body.done) body.completedAt=prev.completedAt||new Date().toISOString();
+  try{await db.collection("views").doc(CP.clip.id+"_"+state.sid).set(body)}catch(_){CP&&(CP.dirty=true)}
+}
+function openClip(id){
+  const c=state.clips.find(x=>x.id===id); if(!c) return;
+  const v=viewOf(c.id,state.sid)||{};
+  CP={clip:c,seen:new Set(v.seen||[]),dur:v.dur||0,pct:v.pct||0,done:!!v.done,last:null,dirty:false,savedAt:0,timer:null,player:null};
+  $("cpTitle").textContent=c.title;
+  $("cpMsg").innerHTML=CP.done?`<div class="cp-done">${MEDAL}<span>حصلت على شارة التميّز في هذا المقطع، ويمكنك مشاهدته مرة أخرى.</span></div>`:"شاهد المقطع حتى نهايته؛ تُحسب الأجزاء التي شاهدتها فعلًا، وتحصل على الشارة عند 90%.";
+  $("clipPlayer").hidden=false;
+  const fr=$("cpFrame"); fr.innerHTML="";
+  cpUpdate();
+  if(c.kind==="yt"){
+    const host=document.createElement("div");fr.appendChild(host);
+    loadYT().then(()=>{
+      if(!CP||CP.clip.id!==c.id) return;
+      CP.player=new YT.Player(host,{videoId:c.yt,playerVars:{rel:0,playsinline:1,modestbranding:1},events:{
+        onReady:e=>{CP&&(CP.dur=e.target.getDuration()||CP.dur);cpUpdate()}
+      }});
+      CP.timer=setInterval(()=>{
+        const p=CP&&CP.player; if(!p||!p.getCurrentTime) return;
+        const d=p.getDuration&&p.getDuration(); if(d) CP.dur=d;
+        cpTick(p.getCurrentTime(),p.getPlayerState&&p.getPlayerState()===1); cpSave(false);
+      },1000);
+    }).catch(()=>{fr.innerHTML=`<div style="display:grid;place-items:center;color:#fff;padding:20px;text-align:center">تعذّر تحميل مشغّل يوتيوب؛ تحقق من الاتصال ثم أعد المحاولة.</div>`});
+  }else{
+    const vd=document.createElement("video");vd.src=c.url;vd.controls=true;vd.playsInline=true;vd.preload="metadata";fr.appendChild(vd);
+    vd.addEventListener("loadedmetadata",()=>{if(CP){CP.dur=vd.duration||CP.dur;cpUpdate()}});
+    vd.addEventListener("timeupdate",()=>{cpTick(vd.currentTime,!vd.paused&&!vd.seeking);cpSave(false)});
+    vd.addEventListener("seeking",()=>{if(CP)CP.last=null});
+    vd.addEventListener("error",()=>{$("cpMsg").textContent="تعذّر تشغيل هذا المقطع؛ أخبر المشرف بذلك."});
+  }
+}
+async function closeClip(){
+  if(!CP) return;
+  clearInterval(CP.timer);
+  await cpSave(true);
+  try{CP.player&&CP.player.destroy&&CP.player.destroy()}catch(_){}
+  CP=null; $("cpFrame").innerHTML=""; $("clipPlayer").hidden=true;
+  if(state.view==="me") renderMe();
+}
+$("cpClose").onclick=closeClip;
+$("clipPlayer").addEventListener("click",e=>{if(e.target.id==="clipPlayer")closeClip()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&CP)closeClip()});
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&CP)cpSave(true)});
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-clip]");if(b&&state.mode==="student")openClip(b.dataset.clip)});
+
+/* staff: send clips and see who earned the badge */
+function renderClipsStaff(){
+  const box=$("v-clips");
+  if(!$("clipForm")){
+    box.innerHTML=`<form class="clip-form" id="clipForm" novalidate><h3>إرسال مقطع للفائدة إلى الطلاب</h3>
+      <label>عنوان المقطع<input name="title" required maxlength="120" placeholder="مثال: أحكام النون الساكنة" autocomplete="off"></label>
+      <label>رابط المقطع<input name="url" required dir="ltr" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://youtu.be/..."></label>
+      <label class="full">وصف قصير (اختياري)<textarea name="desc" maxlength="300" placeholder="ما الذي يستفيده الطالب من هذا المقطع؟"></textarea></label>
+      <div class="row"><button class="btn" type="submit">إرسال للطلاب</button><span class="hint">يُقبل رابط يوتيوب (عادي أو Shorts)، أو رابط مباشر لملف فيديو (mp4). يظهر المقطع فورًا في صفحة كل طالب تحت المصحف، ومن يشاهده كاملًا يحصل على شارة تميّز.</span></div></form>
+      <h2 class="sec-title">المقاطع المرسلة <small>ومن حصل على شارة التميّز في كل مقطع.</small></h2><div class="sclips" id="sclips"></div>`;
+    $("clipForm").addEventListener("submit",async e=>{
+      e.preventDefault();
+      const f=e.target,title=f.title.value.trim(),desc=f.desc.value.trim();let url=f.url.value.trim();
+      if(url&&!/^https?:\/\//i.test(url)) url="https://"+url;
+      url=url.replace(/^http:\/\//i,"https://");
+      if(!title){toast("اكتب عنوان المقطع.");f.title.focus();return}
+      const kind=clipKind(url);
+      if(!kind){toast("الرابط غير مدعوم: استعمل رابط يوتيوب أو رابط ملف فيديو mp4.");f.url.focus();return}
+      const btn=f.querySelector("button");btn.disabled=true;
+      try{
+        const me=firebase.auth().currentUser;
+        await db.collection("clips").doc("c"+Date.now().toString(36)).set({title,desc,url,kind,yt:kind==="yt"?ytIdOf(url):null,active:true,createdAt:new Date().toISOString(),createdBy:(me&&me.email)||""});
+        f.reset();toast("أُرسل المقطع، وظهر للطلاب.");
+      }catch(err){toast(err&&err.code==="permission-denied"?"لا صلاحية لإرسال المقاطع؛ يلزم تحديث قواعد قاعدة البيانات.":"تعذّر إرسال المقطع؛ تحقق من الاتصال.")}
+      btn.disabled=false;
+    });
+    $("sclips").addEventListener("click",async e=>{
+      const b=e.target.closest("[data-del]"); if(!b) return;
+      if(!confirm("حذف هذا المقطع من صفحات الطلاب؟ تبقى الشارات التي حصلوا عليها محفوظة في السجل."))return;
+      try{await db.collection("clips").doc(b.dataset.del).set({active:false,removedAt:new Date().toISOString()},{merge:true});toast("حُذف المقطع من صفحات الطلاب.")}catch(_){toast("تعذّر الحذف؛ تحقق من الاتصال.")}
+    });
+  }
+  const dt=new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"long"});
+  $("sclips").innerHTML=state.clips.length?state.clips.map(c=>{
+    const th=clipThumb(c);
+    const people=STUDENTS.map(st=>{const v=viewOf(c.id,st.id);return {n:st.name,got:v&&v.done,p:v?Math.round((v.pct||0)*100):0}});
+    const got=people.filter(x=>x.got).length;
+    return `<article class="sclip"><div class="clip-th" style="${th?`background-image:url('${th}')`:""}"><span class="pl">${PLAY_IC}</span></div><div class="sclip-b">
+      <div style="display:flex;gap:8px;align-items:start;justify-content:space-between"><b>${esc(c.title)}</b><button class="linkbtn" type="button" data-del="${esc(c.id)}">حذف</button></div>
+      ${c.desc?`<span class="muted">${esc(c.desc)}</span>`:""}
+      <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.url)}</a>
+      <span class="muted">أُرسل ${c.createdAt?dt.format(new Date(c.createdAt)):""}، وحصل على الشارة ${got} من ${people.length}.</span>
+      <div class="who">${people.map(x=>`<span class="${x.got?"got":""}">${x.got?"🏅 ":""}${esc(x.n)}${!x.got&&x.p?` (${x.p}%)`:""}</span>`).join("")}</div>
+    </div></article>`;
+  }).join(""):`<div class="clip-empty">لم تُرسل مقاطع بعد.</div>`;
+}
+function onClips(docs){
+  state.clips=docs.map(d=>({id:d.id,...d.data()})).filter(c=>c.active!==false&&c.url).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  if(state.view==="me") renderMe();
+  if(state.view==="clips") renderClipsStaff();
+}
+function onViews(docs){
+  const o={};docs.forEach(d=>{o[d.id]=d.data()});state.views=o;
+  if(state.view==="me"&&!CP) renderMe();
+  if(state.view==="clips") renderClipsStaff();
+}
+
 /* ---------- remote halaqa (live session) ---------- */
 const LIVE_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M15.5 10.5l6-3.5v10l-6-3.5z"/></svg>';
 const timeFmt=new Intl.DateTimeFormat("ar-SA-u-nu-latn",{hour:"numeric",minute:"2-digit"});
@@ -1271,6 +1486,8 @@ async function onLogin(u){
     enter("student",me.sid,`الطالب: <b>${esc(nm||"")}</b>`);
     listen(db.collection("records").where("sid","==",me.sid),onRecords);
     listen(db.collection("listen").where("sid","==",me.sid),onListen);
+    listen(db.collection("clips"),onClips);
+    listen(db.collection("views").where("sid","==",me.sid),onViews);
     watchLive();
   }else{
     enter("staff",null,`مسجّل الدخول: <b dir="ltr">${esc(u.email||"")}</b>`);
@@ -1278,12 +1495,15 @@ async function onLogin(u){
     listen(db.collection("listen"),onListen);
     listen(db.collection("students"),onStudents);
     listen(db.collection("users"),docs=>{const o={};docs.forEach(d=>{o[d.id]=d.data()});state.users=o;if(state.view==="accounts")renderAccounts()});
+    listen(db.collection("clips"),onClips);
+    listen(db.collection("views"),onViews);
     watchLive();
   }
   renderLive();
 }
 function onLogout(){
-  stopSubs(); db=null; state.mode=null; state.live=null; $("liveBox").hidden=true; document.title="منصة صفوة رتّل"; state.records={}; state.users={}; state.listen={};
+  if(CP){clearInterval(CP.timer);CP=null;$("cpFrame").innerHTML="";$("clipPlayer").hidden=true}
+  stopSubs(); db=null; state.mode=null; state.live=null; state.clips=[]; state.views={}; $("v-clips").innerHTML=""; $("liveBox").hidden=true; document.title="منصة صفوة رتّل"; state.records={}; state.users={}; state.listen={};
   try{AUD.pause()}catch(_){} P=null; STUDENTS=DEFAULT_STUDENTS.slice();
   $("app").hidden=true; $("userbar").hidden=true; $("loginWrap").hidden=false;
 }
