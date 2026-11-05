@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>منصة صفوة رتّل</title>
+<meta name="theme-color" content="#7b4a1f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="صفوة رتّل">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
@@ -311,6 +318,11 @@ select.ayah:disabled{opacity:.5}
 .toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:9px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.show{opacity:1}
 #printRoot{display:none}
+.install{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#fff,var(--gold-soft));border:1px solid var(--gold-2);border-radius:14px;padding:10px 14px;margin-top:12px}
+.install img{width:42px;height:42px;border-radius:10px;border:1px solid var(--line)}
+.install div{flex:1;min-width:180px;font-size:13.5px}
+.install b{display:block;color:var(--brand);font-size:14.5px}
+@media (display-mode:standalone){.install{display:none}}
 
 @media (max-width:760px){
   .cal-wrap{grid-template-columns:1fr}
@@ -363,6 +375,8 @@ select.ayah:disabled{opacity:.5}
   <span id="whoName"></span>
   <button class="ghost" id="logout">تسجيل الخروج</button>
 </div>
+
+<div class="wrap" id="installBar" hidden><div class="install"><img src="icon-192.png" alt=""><div><b>ثبّت منصة صفوة رتّل على جوالك</b><span id="installHint">لتفتحها بضغطة من الشاشة الرئيسية مثل أي تطبيق.</span></div><button class="btn" id="installBtn" type="button">تثبيت التطبيق</button><button class="ghost" id="installNo" type="button">ليس الآن</button></div></div>
 
 <section class="wrap" id="loginWrap" hidden>
   <form class="login" id="loginForm">
@@ -1135,6 +1149,21 @@ if(!window.firebase||!cfg||!cfg.apiKey||cfg.apiKey.indexOf("YOUR_")===0){
   });
   $("logout").onclick=()=>auth.signOut();
 }
+
+/* ---------- app install (PWA) ---------- */
+if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+(function(){
+  const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  let dismissed=false; try{dismissed=localStorage.getItem("safwa-install-no")==="1"}catch(_){}
+  if(standalone||dismissed) return;
+  const bar=$("installBar"),btn=$("installBtn");let deferred=null;
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;bar.hidden=false;btn.hidden=false});
+  if(isIOS){bar.hidden=false;btn.hidden=true;$("installHint").textContent="في متصفح سفاري: اضغط زر المشاركة، ثم «إضافة إلى الشاشة الرئيسية».";}
+  btn.onclick=async()=>{if(!deferred)return;deferred.prompt();const c=await deferred.userChoice.catch(()=>null);deferred=null;if(c&&c.outcome==="accepted")bar.hidden=true};
+  $("installNo").onclick=()=>{bar.hidden=true;try{localStorage.setItem("safwa-install-no","1")}catch(_){}};
+  addEventListener("appinstalled",()=>{bar.hidden=true});
+})();
 </script>
 </body>
 </html>
