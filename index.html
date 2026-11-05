@@ -3,7 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>منصة صفوة رتّل</title>
+<title>حلقة صفوة رتّل | جمعية رتّل لتحفيظ القرآن الكريم بنجران</title>
+<meta name="description" content="حلقة صفوة رتّل (صفوة رتل) في جمعية رتّل لتحفيظ القرآن الكريم بنجران: منصة المتابعة اليومية لتأهيل طلاب مسابقة الملك سلمان بن عبدالعزيز لحفظ القرآن الكريم، بإشراف مشرف الشؤون التعليمية عبدالمجيد بن عبدالله الجابري، والمعلم الشيخ عبدالرحمن محمد عبدالباقي.">
+<meta name="keywords" content="حلقة صفوة رتل, صفوة رتّل, جمعية رتل نجران, تحفيظ القرآن نجران, مسابقة الملك سلمان لحفظ القرآن الكريم">
+<link rel="canonical" href="https://mj-idd.github.io/safwa-ratl/">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ar_SA">
+<meta property="og:site_name" content="حلقة صفوة رتّل">
+<meta property="og:title" content="حلقة صفوة رتّل | جمعية رتّل لتحفيظ القرآن الكريم بنجران">
+<meta property="og:description" content="حلقة صفوة رتّل (صفوة رتل) في جمعية رتّل لتحفيظ القرآن الكريم بنجران: منصة المتابعة اليومية لتأهيل طلاب مسابقة الملك سلمان بن عبدالعزيز لحفظ القرآن الكريم، بإشراف مشرف الشؤون التعليمية عبدالمجيد بن عبدالله الجابري، والمعلم الشيخ عبدالرحمن محمد عبدالباقي.">
+<meta property="og:url" content="https://mj-idd.github.io/safwa-ratl/">
+<meta property="og:image" content="https://mj-idd.github.io/safwa-ratl/icon-512.png">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "EducationalOrganization", "name": "حلقة صفوة رتّل", "alternateName": ["صفوة رتل", "حلقة صفوة رتل", "منصة صفوة رتّل"], "description": "حلقة صفوة رتّل (صفوة رتل) في جمعية رتّل لتحفيظ القرآن الكريم بنجران: منصة المتابعة اليومية لتأهيل طلاب مسابقة الملك سلمان بن عبدالعزيز لحفظ القرآن الكريم، بإشراف مشرف الشؤون التعليمية عبدالمجيد بن عبدالله الجابري، والمعلم الشيخ عبدالرحمن محمد عبدالباقي.", "url": "https://mj-idd.github.io/safwa-ratl/", "logo": "https://mj-idd.github.io/safwa-ratl/icon-512.png", "parentOrganization": {"@type": "Organization", "name": "جمعية رتّل لتحفيظ القرآن الكريم بنجران"}, "address": {"@type": "PostalAddress", "addressLocality": "نجران", "addressCountry": "SA"}}</script>
 <meta name="theme-color" content="#7b4a1f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -563,7 +576,7 @@ const SUP="عبدالمجيد بن عبدالله الجابري", TEA="الشي
 const $=id=>document.getElementById(id);
 
 /* ---------- auto-update: always run the newest version ---------- */
-const APP_VER="2026-11-05.12";
+const APP_VER="2026-11-05.13";
 (function(){
   let busy=false;
   async function check(){
@@ -1376,7 +1389,7 @@ function renderLive(){
   const L=state.live||{}, on=liveOn();
   if(state.mode==="student"){
     if(!on){
-      box.hidden=false;document.title="منصة صفوة رتّل";
+      box.hidden=false;document.title="حلقة صفوة رتّل | جمعية رتّل لتحفيظ القرآن الكريم بنجران";
       box.innerHTML=`<div class="live off" role="status"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><span class="live-badge off"><i class="live-dot"></i>لا تعمل الآن</span><h3 style="margin-top:6px">حلقة صفوة رتّل عن بُعد</h3><small>حين يبدأ المعلم الحلقة يتحوّل هذا المربع إلى الأخضر، ويظهر زر الانضمام.</small></div><a class="btn" aria-disabled="true" tabindex="-1">انضمّ الآن</a></div></div>`;
       return;
     }
@@ -1503,7 +1516,7 @@ async function onLogin(u){
 }
 function onLogout(){
   if(CP){clearInterval(CP.timer);CP=null;$("cpFrame").innerHTML="";$("clipPlayer").hidden=true}
-  stopSubs(); db=null; state.mode=null; state.live=null; state.clips=[]; state.views={}; $("v-clips").innerHTML=""; $("liveBox").hidden=true; document.title="منصة صفوة رتّل"; state.records={}; state.users={}; state.listen={};
+  stopSubs(); db=null; state.mode=null; state.live=null; state.clips=[]; state.views={}; $("v-clips").innerHTML=""; $("liveBox").hidden=true; document.title="حلقة صفوة رتّل | جمعية رتّل لتحفيظ القرآن الكريم بنجران"; state.records={}; state.users={}; state.listen={};
   try{AUD.pause()}catch(_){} P=null; STUDENTS=DEFAULT_STUDENTS.slice();
   $("app").hidden=true; $("userbar").hidden=true; $("loginWrap").hidden=false;
 }
