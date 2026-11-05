@@ -509,6 +509,32 @@ const LOGO_SRC=document.querySelector(".logo").src;
 const SUP="عبدالمجيد بن عبدالله الجابري", TEA="الشيخ عبدالرحمن محمد عبدالباقي";
 
 const $=id=>document.getElementById(id);
+
+/* ---------- auto-update: always run the newest version ---------- */
+const APP_VER="2026-11-05.11";
+(function(){
+  let busy=false;
+  async function check(){
+    if(busy) return; busy=true;
+    try{
+      const t=await fetch("index.html?v="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.text():"");
+      const m=t.match(/const APP_VER="([^"]+)"/);
+      if(m&&m[1]!==APP_VER){
+        let last=0; try{last=+sessionStorage.getItem("safwa-reload")||0}catch(_){}
+        if(Date.now()-last>60000){
+          try{sessionStorage.setItem("safwa-reload",String(Date.now()))}catch(_){}
+          try{await Promise.all([fetch("./",{cache:"reload"}),fetch("index.html",{cache:"reload"})])}catch(_){}
+          try{for(const k of await caches.keys()) if(k.indexOf("safwa-shell")===0) await caches.delete(k)}catch(_){}
+          try{const r=await navigator.serviceWorker.getRegistration(); r&&r.update()}catch(_){}
+          location.reload(); return;
+        }
+      }
+    }catch(_){}
+    busy=false;
+  }
+  addEventListener("load",()=>setTimeout(check,1200));
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden) check()});
+})();
 const hijri=new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"long",year:"numeric"});
 const hijriD=new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"short"});
 const hMonth=new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn",{month:"long",year:"numeric"});
