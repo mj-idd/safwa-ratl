@@ -1,5 +1,5 @@
 // صفوة رتّل: تشغيل المنصة تطبيقًا، مع حفظ صفحات المصحف التي فُتحت للعودة إليها سريعًا.
-const SHELL = "safwa-shell-v1";
+const SHELL = "safwa-shell-v2";
 const PAGES = "safwa-mushaf-v1";
 const SHELL_FILES = ["./", "./index.html", "./firebase-config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
@@ -14,7 +14,7 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   // ملفات المنصة: الشبكة أولًا ليصل كل تحديث فورًا، والنسخة المحفوظة عند انقطاع الاتصال.
   if (url.origin === location.origin) {
-    e.respondWith(fetch(req).then(res => {
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(SHELL).then(c => c.put(req, copy)); }
       return res;
     }).catch(() => caches.match(req).then(r => r || caches.match("./index.html"))));
