@@ -345,6 +345,12 @@ select.ayah:disabled{opacity:.5}
 .btn.stop{background:#a33a2b}
 .live-link{direction:ltr;font-size:13px;color:#17703d;word-break:break-all}
 @media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
+.live.off{background:linear-gradient(135deg,#fdf0ee,#fffafa);border:1.5px solid #e0a49b}
+.live.off .live-ic{background:#b3392a;color:#fff}
+.live.off h3{color:#8f2c20}
+.live-badge.off{background:#b3392a}
+.live-badge.off .live-dot{background:#ffb3a8;animation:none;box-shadow:none}
+.btn[aria-disabled=true]{background:#d9c9c4;color:#fff;pointer-events:none}
 .iguide{position:fixed;inset:0;z-index:90;background:rgba(59,37,22,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}
 .iguide[hidden]{display:none}
 .ig-card{background:#fff;border-radius:20px;width:100%;max-width:440px;max-height:92vh;overflow:auto;padding:18px 18px 14px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -1128,7 +1134,11 @@ function renderLive(){
   const box=$("liveBox"); if(!box) return;
   const L=state.live||{}, on=liveOn();
   if(state.mode==="student"){
-    if(!on){box.hidden=true;box.innerHTML="";document.title="منصة صفوة رتّل";return}
+    if(!on){
+      box.hidden=false;document.title="منصة صفوة رتّل";
+      box.innerHTML=`<div class="live off" role="status"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><span class="live-badge off"><i class="live-dot"></i>لا تعمل الآن</span><h3 style="margin-top:6px">حلقة صفوة رتّل عن بُعد</h3><small>حين يبدأ المعلم الحلقة يتحوّل هذا المربع إلى الأخضر، ويظهر زر الانضمام.</small></div><a class="btn" aria-disabled="true" tabindex="-1">انضمّ الآن</a></div></div>`;
+      return;
+    }
     const st=L.startedAt?timeFmt.format(new Date(L.startedAt)):"";
     box.hidden=false;
     box.innerHTML=`<div class="live on" role="status"><div class="live-h"><div class="live-ic">${LIVE_IC}</div><div style="flex:1;min-width:180px"><span class="live-badge"><i class="live-dot"></i>الحلقة تعمل الآن</span><h3 style="margin-top:6px">حلقة صفوة رتّل عن بُعد</h3><small>${st?`بدأها المعلم الساعة ${st}، `:""}عبر ${esc(livePlatform(L.url))}.</small></div><a class="btn go" href="${esc(L.url)}" target="_blank" rel="noopener">انضمّ الآن</a></div></div>`;
