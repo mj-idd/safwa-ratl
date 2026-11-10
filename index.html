@@ -576,7 +576,7 @@ const SUP="عبدالمجيد بن عبدالله الجابري", TEA="الشي
 const $=id=>document.getElementById(id);
 
 /* ---------- auto-update: always run the newest version ---------- */
-const APP_VER="2026-11-05.13";
+const APP_VER="2026-11-10.15";
 (function(){
   let busy=false;
   async function check(){
@@ -930,7 +930,8 @@ function renderMe(){
 }
 /* ---------- Minshawi listening (student) ---------- */
 const AUD=new Audio(); AUD.preload="auto";
-let P=null,lastT=0,saveChain=Promise.resolve();
+const NEXT_AUD=new Audio(); NEXT_AUD.preload="auto";
+let P=null,lastT=0,lastW=0,retry=0,saveChain=Promise.resolve();
 const pad3=n=>String(n).padStart(3,"0");
 function ayahList(from,to){
   if(!from||!from.s) return [];
@@ -993,13 +994,13 @@ function mushafHTML(){
     <button class="navbtn" data-mp="1" type="button" aria-label="الصفحة التالية">التالية ←</button></div>
     <div class="mu-tools"><label>السورة <select id="muS">${sOpts}</select></label><label>الصفحة <select id="muP">${pOpts}</select></label>${!M.follow&&c?`<button class="lc-link" id="muBack" type="button">العودة إلى موضع التلاوة</button>`:""}</div>
     <div class="mu-now" id="muNow"${P&&P.playing&&c?"":" hidden"}>${c?`يُتلى الآن: ${esc(surahName(c[0]))} — الآية ${c[1]}`:""}</div>
-    <div class="mu-page"><img id="muImg" src="${pageImg(p)}" alt="صفحة ${p} من المصحف الشريف" width="1024" height="1656"></div>
+    <div class="mu-page"><img id="muImg" src="${pageImg(p)}" alt="صفحة ${p} من المصحف الشريف" width="1024" height="1656"></div>${p<604?`<link rel="prefetch" as="image" href="${pageImg(p+1)}">`:""}
     <div class="mu-src">صفحة ${p} من 604</div></section>`;
 }
 function setPage(p,manual){
   p=Math.max(1,Math.min(604,p));if(manual)M.follow=false;if(p===M.page&&!manual)return;M.page=p;
   const img=$("muImg");if(!img){return}
-  img.removeAttribute("data-fb");img.src=pageImg(p);img.alt=`صفحة ${p} من المصحف الشريف`;
+  img.removeAttribute("data-fb");img.src=pageImg(p);img.alt=`صفحة ${p} من المصحف الشريف`;img.decoding="sync";
   $("muTitle").textContent=pageTitle(p);$("muP").value=String(p);$("muS").value=String(PAGES[p-1][0]);
   const src=document.querySelector(".mu-src");if(src)src.textContent=`صفحة ${p} من 604`;
   if(p<604){const n=new Image();n.src=pageImg(p+1)}
@@ -1021,33 +1022,136 @@ function saveListen(){
   if(done) body.completedAt=body.updatedAt;
   saveChain=saveChain.then(()=>db.collection("listen").doc(P.key).set(body)).catch(()=>toast("تعذّر حفظ تقدّم السماع؛ تحقق من الاتصال."));
 }
-function loadAyah(){const [s,a]=P.list[P.idx];lastT=0;AUD.src=RECITER_URL+pad3(s)+pad3(a)+".mp3";AUD.playbackRate=1}
+/* ayah files known to be wrong at the source (everyayah 039006.mp3 holds Az-Zumar 7–75, not ayah 6):
+   played from the same Muallim recording on quran.com, between its exact ayah timings */
+const FIXED_SEG={"39:6":["https://download.quranicaudio.com/qdc/siddiq_minshawi/kids_repeat/39.mp3",198.364,283.246]};
+const ayahURL=(s,a)=>RECITER_URL+pad3(s)+pad3(a)+".mp3";
+/* fallback: the same Minshawi Muallim recording (quran.com, "with kids") as whole-surah files with exact ayah timings */
+const QDC_TIMINGS="https://api.quran.com/api/qdc/audio/reciters/168/audio_files?segments=true&chapter=";
+const TIMINGS={};let SEG=null;
+async function chapterTimings(s){
+  if(TIMINGS[s]) return TIMINGS[s];
+  const j=await fetch(QDC_TIMINGS+s).then(r=>{if(!r.ok)throw 0;return r.json()});
+  const f=j.audio_files[0],m={url:f.audio_url,t:{}};
+  f.verse_timings.forEach(v=>{m.t[v.verse_key]=[v.timestamp_from/1000,v.timestamp_to/1000]});
+  return TIMINGS[s]=m;
+}
+function loadAyah(){
+  const [s,a]=P.list[P.idx];lastT=0;lastW=performance.now();SEG=null;P.fallback=false;
+  const fx=FIXED_SEG[s+":"+a];
+  if(fx){SEG={from:fx[1],to:fx[2],k:P.key+P.idx};P.fallback=true;lastT=fx[1];AUD.src=fx[0]+"#t="+fx[1].toFixed(3)}
+  else AUD.src=ayahURL(s,a);
+  AUD.playbackRate=1;AUD.dataset.k=P.key+P.idx;
+  const nx=P.list[P.idx+1];if(nx&&!FIXED_SEG[nx[0]+":"+nx[1]]){try{NEXT_AUD.src=ayahURL(nx[0],nx[1])}catch(_){}}
+  setMediaSession();
+}
+async function useFallback(){
+  if(!P) return false;
+  const [s,a]=P.list[P.idx],k=P.key+P.idx;
+  if(FIXED_SEG[s+":"+a]){loadAyah();return true}
+  try{
+    const m=await chapterTimings(s),t=m.t[s+":"+a];
+    if(!t||!P||P.key+P.idx!==k) return false;
+    SEG={from:t[0],to:t[1],k};P.fallback=true;
+    lastT=t[0];lastW=performance.now();
+    AUD.src=m.url+"#t="+t[0].toFixed(3);AUD.playbackRate=1;AUD.dataset.k=k;
+    const n=$("lcNow");if(n)n.textContent="جارٍ التحميل من مصدر بديل للتلاوة نفسها…";
+    return true;
+  }catch(_){return false}
+}
+/* the Mushaf page must be on screen before the ayah on it starts */
+function preloadPassagePages(){
+  if(!P) return; const seen=new Set();
+  P.list.forEach(([s,a])=>{const p=pageOf(s,a);if(!seen.has(p)){seen.add(p);const im=new Image();im.src=pageImg(p)}});
+}
+function imgReady(timeout){
+  const img=$("muImg");
+  if(!img||document.hidden) return Promise.resolve();
+  if(img.complete&&img.naturalWidth) return Promise.resolve();
+  return new Promise(res=>{let t=null;const fin=()=>{clearTimeout(t);img.removeEventListener("load",fin);img.removeEventListener("error",fin);res()};
+    img.addEventListener("load",fin);img.addEventListener("error",fin);t=setTimeout(fin,timeout||6000)});
+}
+function setMediaSession(){
+  if(!("mediaSession" in navigator)||!P) return;
+  const c=P.list[Math.min(P.idx,P.list.length-1)];
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({title:`${surahName(c[0])} — الآية ${c[1]}`,artist:"الشيخ محمد صدّيق المنشاوي (المصحف المعلّم)",album:"حلقة صفوة رتّل",artwork:[{src:"icon-512.png",sizes:"512x512",type:"image/png"}]});
+    navigator.mediaSession.setActionHandler("play",()=>{if(P&&!P.playing)togglePlay()});
+    navigator.mediaSession.setActionHandler("pause",()=>{if(P&&P.playing)togglePlay()});
+    ["seekto","seekforward","seekbackward","nexttrack","previoustrack"].forEach(a=>{try{navigator.mediaSession.setActionHandler(a,null)}catch(_){}});
+  }catch(_){}
+}
+function playFailed(msg){
+  if(!P) return; P.playing=false; updateListenUI();
+  toast(msg||"توقفت التلاوة؛ اضغط زر التشغيل لتكمل من الآية نفسها.");
+}
 function togglePlay(){
   const p=ensurePlayer(); if(!p||!p.list.length) return;
   M.follow=true;
   if(p.playing){AUD.pause();p.playing=false;updateListenUI();return}
   if(p.idx>=p.list.length){p.idx=0;p.replay=true}
-  if(!AUD.src||AUD.ended||AUD.dataset.k!==p.key+p.idx){loadAyah();AUD.dataset.k=p.key+p.idx}
-  p.playing=true;
-  AUD.play().then(()=>updateListenUI()).catch(()=>{p.playing=false;updateListenUI();toast("تعذّر تشغيل التلاوة؛ تحقق من الاتصال بالإنترنت.")});
+  if(!AUD.src||AUD.ended||AUD.error||AUD.dataset.k!==p.key+p.idx) loadAyah();
+  else if(SEG&&AUD.currentTime>=SEG.to-0.05){lastT=SEG.from;AUD.currentTime=SEG.from}
+  p.playing=true; retry=0; lastW=performance.now();
+  preloadPassagePages();
+  AUD.play().then(()=>updateListenUI()).catch(()=>playFailed("تعذّر تشغيل التلاوة؛ تحقق من الاتصال بالإنترنت، ثم اضغط تشغيل."));
   if(!p.replay&&p.idx===0) saveListen();
   renderMe();
 }
-AUD.addEventListener("timeupdate",()=>{if(AUD.currentTime-lastT>1.5){AUD.currentTime=lastT}else lastT=AUD.currentTime});
-AUD.addEventListener("seeking",()=>{if(AUD.currentTime-lastT>1.5)AUD.currentTime=lastT});
-AUD.addEventListener("ratechange",()=>{if(AUD.playbackRate!==1)AUD.playbackRate=1});
-AUD.addEventListener("ended",()=>{
+function allowedJump(){return AUD.paused?1.5:Math.max(0,(performance.now()-lastW)/1000)*1.25+1.5}
+AUD.addEventListener("timeupdate",()=>{
+  if(AUD.seeking) return;
+  if(AUD.currentTime-lastT>allowedJump()) AUD.currentTime=lastT;
+  else lastT=Math.max(lastT,AUD.currentTime);
+  lastW=performance.now();
+});
+AUD.addEventListener("seeking",()=>{if(AUD.currentTime-lastT>allowedJump())AUD.currentTime=lastT});
+AUD.addEventListener("playing",()=>{lastW=performance.now();retry=0;if(P&&AUD.dataset.k===P.key+P.idx&&!P.playing){P.playing=true;updateListenUI()}const n=$("lcNow");if(n&&P&&P.playing){const c=P.list[Math.min(P.idx,P.list.length-1)];n.textContent=`${surahName(c[0])} — الآية ${c[1]}`}});
+AUD.addEventListener("loadedmetadata",()=>{
   if(!P) return;
+  if(SEG){if(Math.abs(AUD.currentTime-SEG.from)>0.5){lastT=SEG.from;AUD.currentTime=SEG.from}return}
+  /* a single ayah is never longer than ~15 minutes, even with the children's repetition */
+  if(AUD.duration>900&&isFinite(AUD.duration)){const play=P.playing;AUD.pause();P.retrying=true;
+    useFallback().then(ok=>{P.retrying=false;if(!ok){playFailed("ملف هذه الآية تالف عند مصدر التلاوة، وتعذّر المصدر البديل؛ أخبر المشرف.");return}if(play)AUD.play().catch(()=>playFailed())});}
+});
+AUD.addEventListener("waiting",()=>{const n=$("lcNow");if(n&&P&&P.playing)n.textContent="جارٍ تحميل التلاوة…"});
+/* a failed or stalled ayah is reloaded and replayed from its start, never skipped */
+AUD.addEventListener("error",()=>{
+  if(!P||!P.playing||!AUD.src) return;
+  if(retry<4){retry++;P.retrying=true;const n=$("lcNow");if(n)n.textContent="انقطع التحميل؛ تُعاد المحاولة…";
+    setTimeout(async()=>{if(!P||!P.playing)return;
+      if(retry>=2&&!P.fallback){if(!(await useFallback()))loadAyah()}else if(P.fallback){await useFallback()}else loadAyah();
+      AUD.play().then(()=>{P.retrying=false}).catch(()=>{P.retrying=false;playFailed()})},1500*retry);}
+  else{P.retrying=false;playFailed("تعذّر تحميل التلاوة؛ تحقق من الاتصال، ثم اضغط تشغيل لتكمل من الآية نفسها.")}
+});
+let stallT=-1,stallN=0;
+setInterval(()=>{
+  if(!P||!P.playing||AUD.paused||P.retrying||document.hidden){stallN=0;return}
+  if(AUD.currentTime===stallT){if(++stallN>=4){stallN=0;(P.fallback?useFallback():Promise.resolve(loadAyah())).then(()=>AUD.play().catch(()=>playFailed()))}}else{stallN=0;stallT=AUD.currentTime}
+},3000);
+AUD.addEventListener("ratechange",()=>{if(AUD.playbackRate!==1)AUD.playbackRate=1});
+AUD.addEventListener("timeupdate",()=>{
+  if(SEG&&P&&SEG.k===P.key+P.idx&&AUD.currentTime>=SEG.to-0.05){P.advancing=true;AUD.pause();P.advancing=false;ayahEnded()}
+});
+AUD.addEventListener("ended",()=>ayahEnded());
+async function ayahEnded(){
+  if(!P||AUD.dataset.k!==P.key+P.idx) return;
+  SEG=null;
+  AUD.dataset.k="";
   P.idx++;
   if(P.idx>=P.list.length){
     P.playing=false;
     if(!P.replay){saveListen();toast("بارك الله فيك؛ أتممت سماع مقطع اليوم كاملًا.")}
     P.replay=true; renderMe(); return;
   }
-  saveListen(); loadAyah(); AUD.dataset.k=P.key+P.idx;
-  AUD.play().catch(()=>{P.playing=false}); updateListenUI();
-});
-AUD.addEventListener("pause",()=>{if(P&&P.playing&&!AUD.ended){P.playing=false;updateListenUI()}});
+  saveListen(); loadAyah(); updateListenUI();
+  const c=P.list[P.idx]; if(M.follow&&pageOf(c[0],c[1])!==M.page){setPage(pageOf(c[0],c[1]),false)}
+  await imgReady(6000);
+  if(!P||!P.playing) return;
+  AUD.play().catch(()=>playFailed());
+}
+AUD.addEventListener("pause",()=>{if(P&&P.playing&&!AUD.ended&&!P.retrying&&!P.advancing){P.playing=false;updateListenUI()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P&&P.playing&&AUD.paused&&!P.retrying){P.playing=false;updateListenUI()}});
 $("v-me").addEventListener("error",e=>{const t=e.target;if(t&&t.id==="muImg"&&!t.dataset.fb){t.dataset.fb="1";t.src=pageImg2(M.page)}},true);
 function dayDetail(k){
   const r=rec(k,state.sid),d=fromKey(k);
